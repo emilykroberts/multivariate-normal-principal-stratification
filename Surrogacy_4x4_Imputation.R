@@ -7,8 +7,8 @@ library(MCMCpack)
 
 ##simulate data
 array_id <- 1
-n=300
-SIM<-300
+n = 100
+SIM = 40
 
 generatedata = function(n, mu, psi2, psi1, omega1, omega2, sig){
 
@@ -53,7 +53,7 @@ sig = 0.5
 psi2=0; psi1=0; omega1=0; omega2=0 #main effects of x
 
 set.seed(323)
-ST = generatedata(n = 300, mu = mu, psi2 = psi2, psi1 = psi1, omega1 = omega1, omega2 = omega2, sig = sig)
+ST = generatedata(n = n, mu = mu, psi2 = psi2, psi1 = psi1, omega1 = omega1, omega2 = omega2, sig = sig)
 X = ST[,5]
 
 nearest <- function(x, xval, outside=FALSE, na.rm=FALSE) # nearest function from Genkern
@@ -236,9 +236,9 @@ S[2,2] = s2
 S[3,3] = s3
 S[4,4] = s4
 
-if(any(S > 2)){ next }
+#if(any(S > 2)){ next }
 
-print(S)
+#print(S)
 
 ##r12
 a12=(R[3,4]^2-1)
@@ -340,7 +340,6 @@ r12=fr12[nr,1]
 }
 r12[r12>1]=1
 r12=r12[1]
-if(inherits(r12>1, "error")) next
 
 R[1,2]=r12
 R[2,1]=r12
@@ -880,13 +879,12 @@ sim = sim + 1
 
 }    
 
-params_matrix = matrix(holdpsi1 = holdpsi1, holdpsi2 = holdpsi2, holdomega1 = holdomega1, holdomega2 = holdomega2,
+params_matrix = data.frame(holdpsi1 = holdpsi1, holdpsi2 = holdpsi2, holdomega1 = holdomega1, holdomega2 = holdomega2,
                        holdalpha0 = holdalpha0, holdalpha01 = holdalpha01, holdbeta0 = holdbeta0, holdbeta01 = holdbeta01,
                        int = int, slope = slope)
 
 params = list(holdS = holdS, holdR = holdR
-          
-)
+        )
 
 colMeans(params_matrix, na.rm = T)
 
@@ -900,16 +898,23 @@ return(result)
 }
 
 res = run_sim(SIM = SIM, ST = ST, X = X, n = n)
+
+params_matrix = res$params_matrix
+
+holdR = res$params$holdR
+holdS = res$params$holdS
+
+
   
 plot_traceplots = function(params_matrix, variable){
-  param = params_matrix$params
   
-  plot(eval(parse(text = paste0("param$", variable))), ylab = "Parameter Draw",
+  plot(eval(parse(text = paste0("params_matrix$", variable))), ylab = "Parameter Draw",
        xlab = "MCMC Iteration", main = paste("Traceplot of Parameter", variable))
   
   
 }
 
+plot_traceplots(params_matrix = params_matrix, variable = "int")
 
 other_methods = function(){
   gam<-array(0,c((sim-1),1))
@@ -938,6 +943,16 @@ other_methods = function(){
   for (i in 1:(sim-1)){
     mu[i]=holdmu[2,i]-holdmu[1,i]
   }
+  
+  
+  prentice<-data.frame(bet_s=numeric(1), SEbs=numeric(1),bet_trtt=numeric(1), SEbtt=numeric(1), 
+                       bet_trts=numeric(1), SEbts=numeric(1), gam_trt=numeric(1), SEgt=numeric(1),
+                       gam_s=numeric(1), SEgs=numeric(1))
+  
+  pren.post<-data.frame(bet_sp=numeric(1), SEbet_sp=numeric(1),bet_trttp=numeric(1), SEbet_trttp=numeric(1),  
+                        bet_trtsp=numeric(1), SEbet_trtsp=numeric(1), gam_trtp=numeric(1), SEgam_trtp=numeric(1), 
+                        gam_sp=numeric(1),SEgam_sp=numeric(1))
+  
   
   prentice[1]<-summary(mod)$coefficient[2,1] ##effect of s on t
   prentice[2]<-summary(mod)$coefficient[2,2]  ## SE 
@@ -980,13 +995,13 @@ other_methods = function(){
   
 }
 
-final_results = function(params_matrix, write){
+final_results = function(params_matrix, write, holdR, holdS, res){
   ## save results
-  param = params_matrix$params
+  param = params_matrix
   
-  n = params_matrix$args$n
-  burnin = params_matrix$args$burnin
-  sim = params_matrix$args$SIM
+  n = res$args$n
+  burnin = res$args$burnin
+  sim = res$args$SIM
   
 params<-data.frame(mus0=numeric(1), SEmus0=numeric(1), mus1=numeric(1),  SEmus1=numeric(1),
                    mut0=numeric(1), SEmut0=numeric(1), mut1=numeric(1), SEmut1=numeric(1),
@@ -999,14 +1014,6 @@ params<-data.frame(mus0=numeric(1), SEmus0=numeric(1), mus1=numeric(1),  SEmus1=
                    T1u=numeric(1), psl=numeric(1), PSu=numeric(1),p00l=numeric(1), p00u=numeric(1),
                    p01l=numeric(1),p01u=numeric(1),p10l=numeric(1),p10u=numeric(1),p11l=numeric(1),
                    p11u=numeric(1),ptl=numeric(1),ptu=numeric(1))
-
-prentice<-data.frame(bet_s=numeric(1), SEbs=numeric(1),bet_trtt=numeric(1), SEbtt=numeric(1), 
-                     bet_trts=numeric(1), SEbts=numeric(1), gam_trt=numeric(1), SEgt=numeric(1),
-                     gam_s=numeric(1), SEgs=numeric(1))
-
-pren.post<-data.frame(bet_sp=numeric(1), SEbet_sp=numeric(1),bet_trttp=numeric(1), SEbet_trttp=numeric(1),  
-                      bet_trtsp=numeric(1), SEbet_trtsp=numeric(1), gam_trtp=numeric(1), SEgam_trtp=numeric(1), 
-                      gam_sp=numeric(1),SEgam_sp=numeric(1))
 
 PS<-data.frame(dat_int=numeric(1), dat_intSE=numeric(1),dat_sl=numeric(1), dat_slSE=numeric(1), 
                mean_int=numeric(1), SEmean_int=numeric(1),L_int=numeric(1), U_int=numeric(1),mean_sl=numeric(1)
@@ -1023,7 +1030,6 @@ covs<-data.frame(psl=numeric(1), psu=numeric(1),p00l=numeric(1), p00u=numeric(1)
                 s0ind=numeric(1),s1ind=numeric(1),t0ind=numeric(1),t1ind=numeric(1))
 
 
-covs[1]<-quantile(holdR[1,2,burnin:sim-1],  probs = 0.025,na.rm=T)
 covs[2]<-quantile(holdR[1,2,burnin:sim-1],  probs = 0.975,na.rm=T)
 covs[3]<-quantile(holdR[1,3,burnin:sim-1],  probs = 0.025,na.rm=T)
 covs[4]<-quantile(holdR[1,3,burnin:sim-1],  probs = 0.975,na.rm=T)
@@ -1055,16 +1061,6 @@ covs[27]<-as.numeric((holdS[1,1,1]>covs[13])&(holdS[1,1,1]<covs[14]))
 covs[28]<-as.numeric((holdS[2,2,1]>covs[15])&(holdS[2,2,1]<covs[16]))
 covs[29]<-as.numeric((holdS[3,3,1]>covs[17])&(holdS[3,3,1]<covs[18]))
 covs[30]<-as.numeric((holdS[4,4,1]>covs[19])&(holdS[4,4,1]<covs[20]))
-
-
-params[1]<-mean(holdmu[1,burnin:(sim-1)])
-params[2]<-sqrt(var(holdmu[1,burnin:(sim-1)]))
-params[3]<-mean(holdmu[2,burnin:(sim-1)])
-params[4]<-sqrt(var(holdmu[2,burnin:(sim-1)]))
-params[5]<-mean(holdmu[3,burnin:(sim-1)])
-params[6]<-sqrt(var(holdmu[3,burnin:(sim-1)]))
-params[7]<-mean(holdmu[4,burnin:(sim-1)])
-params[8]<-sqrt(var(holdmu[4,burnin:(sim-1)]))
 
 params[9]<-mean(holdS[1,1,burnin:(sim-1)])
 params[10]<-sqrt(var(holdS[1,1,burnin:(sim-1)]))
@@ -1111,89 +1107,49 @@ params[46]<-quantile(holdR[2,4,burnin:sim-1],  probs = 0.975,na.rm=T)
 params[47]<-quantile(holdR[3,4,burnin:sim-1],  probs = 0.025,na.rm=T)
 params[48]<-quantile(holdR[3,4,burnin:sim-1],  probs = 0.975,na.rm=T)
 
-
-PS[5]<-mean(int[burnin:sim-1],na.rm=T)
-PS[6]<-sqrt(var(int[burnin:sim-1],na.rm=T))
-PS[7]<-quantile(int[burnin:sim-1],  probs = 0.025,na.rm=T)
-PS[8]<-quantile(int[burnin:sim-1],  probs = 0.975,na.rm=T)
-PS[9]<-mean(slope[burnin:sim-1],na.rm=T)
-PS[10]<-sqrt(var(slope[burnin:sim-1],na.rm=T))
-PS[11]<-quantile(slope[burnin:sim-1],  probs = 0.025,na.rm=T)
-PS[12]<-quantile(slope[burnin:sim-1],  probs = 0.975,na.rm=T)
-
-pren.post[1]<-mean(gam[burnin:sim-1],na.rm=T)
-pren.post[2]<-sqrt(var(gam[burnin:sim-1],na.rm=T))
-pren.post[3]<-mean(alph[burnin:sim-1],na.rm=T)
-pren.post[4]<-sqrt(var(alph[burnin:sim-1],na.rm=T))
-pren.post[5]<-mean(mu[burnin:sim-1],na.rm=T)
-pren.post[6]<-sqrt(var(mu[burnin:sim-1],na.rm=T))
-pren.post[7]<-mean(b1[burnin:sim-1],na.rm=T)
-pren.post[8]<-sqrt(var(b1[burnin:sim-1],na.rm=T))
-pren.post[9]<-mean(b2[burnin:sim-1],na.rm=T)
-pren.post[10]<-sqrt(var(b2[burnin:sim-1],na.rm=T))
-
-PS[13]<-summary(mod5)$coefficient[1,1]
-PS[14]<-summary(mod5)$coefficient[1,2]
-PS[15]<-summary(mod5)$coefficient[2,1]
-PS[16]<-summary(mod5)$coefficient[2,2]
-
-PS[17]<-mean(int1[burnin:sim-1],na.rm=T)
-PS[18]<-sqrt(var(int1[burnin:sim-1], na.rm=T))
-PS[19]<-quantile(int1[burnin:sim-1],  probs = 0.025,na.rm=T)
-PS[20]<-quantile(int1[burnin:sim-1],  probs = 0.975,na.rm=T)
-PS[21]<-cov(int[burnin:sim-1],slope[burnin:sim-1])
-PS[22]<-cov(int1[burnin:sim-1],slope[burnin:sim-1])
-PS[22]<-cov(int1[burnin:sim-1],slope[burnin:sim-1])
-PS[23]=as.numeric(PS[7]<int[1]&PS[8]>int[1])
-PS[24]=as.numeric(PS[11]<slope[1]&PS[12]>slope[1])
-PS[25]=as.numeric(PS[19]<int1[1]&PS[20]>int1[1])
-
-
+PS[5]<-mean(param$int[burnin:sim-1],na.rm=T)
+PS[6]<-sqrt(var(param$int[burnin:sim-1],na.rm=T))
+PS[7]<-quantile(param$int[burnin:sim-1],  probs = 0.025,na.rm=T)
+PS[8]<-quantile(param$int[burnin:sim-1],  probs = 0.975,na.rm=T)
+PS[9]<-mean(param$slope[burnin:sim-1],na.rm=T)
+PS[10]<-sqrt(var(param$slope[burnin:sim-1],na.rm=T))
+PS[11]<-quantile(param$slope[burnin:sim-1],  probs = 0.025,na.rm=T)
+PS[12]<-quantile(param$slope[burnin:sim-1],  probs = 0.975,na.rm=T)
 
 estcoef<-data.frame(beta0mean=numeric(1), beta01mean=numeric(1),omega1mean=numeric(1), alpha0mean=numeric(1),
                     alpha01mean=numeric(1),psi1mean=numeric(1),psi12mean=numeric(1),omega12mean=numeric(1),
                     beta0l=numeric(1),beta0u=numeric(1), beta01l=numeric(1),beta01u=numeric(1),omega1l=numeric(1),
                     omega1u=numeric(1), alpha0l=numeric(1),alpha0u=numeric(1),
                     alpha01l=numeric(1),alpha01u=numeric(1),psi1l=numeric(1),psi1u=numeric(1),
-                    psi12l=numeric(1),psi12u=numeric(1),omega12l=numeric(1),omega12u=numeric(1), 
-                    beta0ind=numeric(1), beta01ind=numeric(1),omega1ind=numeric(1), alpha0ind=numeric(1),
-                    alpha01ind=numeric(1),psi1ind=numeric(1),psi12ind=numeric(1),omega12ind=numeric(1))
+                    psi12l=numeric(1),psi12u=numeric(1),omega12l=numeric(1),omega12u=numeric(1))
                     
-estcoef[1]=mean(holdbeta0[burnin:sim-1],na.rm=T)
-estcoef[2]=beta01mean=mean(holdbeta01[burnin:sim-1],na.rm=T)
-estcoef[3]=beta1mean=mean(holdomega1[burnin:sim-1],na.rm=T)
-estcoef[4]=alpha0mean=mean(holdalpha0[burnin:sim-1],na.rm=T)
-estcoef[5]=alpha01mean=mean(holdalpha01[burnin:sim-1],na.rm=T)
-estcoef[6]=alpha1mean=mean(holdpsi1[burnin:sim-1],na.rm=T)
-estcoef[7]=omega1mean=mean(holdpsi2[burnin:sim-1],na.rm=T)
-estcoef[8]=omega2mean=mean(holdomega2[burnin:sim-1],na.rm=T)
-estcoef[9]<-quantile(holdbeta0[burnin:sim-1],  probs = 0.025,na.rm=T)
-estcoef[10]<-quantile(holdbeta0[burnin:sim-1],  probs = 0.975,na.rm=T)
-estcoef[11]<-quantile(holdbeta01[burnin:sim-1],  probs = 0.025,na.rm=T)
-estcoef[12]<-quantile(holdbeta01[burnin:sim-1],  probs = 0.975,na.rm=T)
-estcoef[13]<-quantile(holdomega1[burnin:sim-1],  probs = 0.025,na.rm=T)
-estcoef[14]<-quantile(holdomega1[burnin:sim-1],  probs = 0.975,na.rm=T)
-estcoef[15]<-quantile(holdalpha0[burnin:sim-1],  probs = 0.025,na.rm=T)
-estcoef[16]<-quantile(holdalpha0[burnin:sim-1],  probs = 0.975,na.rm=T)
-estcoef[17]<-quantile(holdalpha01[burnin:sim-1],  probs = 0.025,na.rm=T)
-estcoef[18]<-quantile(holdalpha01[burnin:sim-1],  probs = 0.975,na.rm=T)
-estcoef[19]<-quantile(holdpsi1[burnin:sim-1],  probs = 0.025,na.rm=T)
-estcoef[20]<-quantile(holdpsi1[burnin:sim-1],  probs = 0.975,na.rm=T)
-estcoef[21]<-quantile(holdpsi2[burnin:sim-1],  probs = 0.025,na.rm=T)
-estcoef[22]<-quantile(holdpsi2[burnin:sim-1],  probs = 0.975,na.rm=T)
-estcoef[23]<-quantile(holdomega2[burnin:sim-1],  probs = 0.025,na.rm=T)
-estcoef[24]<-quantile(holdomega2[burnin:sim-1],  probs = 0.975,na.rm=T)
-estcoef[25]=as.numeric(estcoef[9]<holdmu[3,1]&estcoef[10]>holdmu[3,1])
-estcoef[26]=as.numeric(estcoef[11]<holdmu[4,1]&estcoef[12]>holdmu[4,1])
-estcoef[27]=as.numeric(estcoef[13]<1&estcoef[14]>1)
-estcoef[28]=as.numeric(estcoef[15]<holdmu[1,1]&estcoef[16]>holdmu[1,1])
-estcoef[29]=as.numeric(estcoef[17]<holdmu[2,1]&estcoef[18]>holdmu[2,1])
-estcoef[30]=as.numeric(estcoef[19]<1&estcoef[20]>1)
-estcoef[31]=as.numeric(estcoef[21]<2&estcoef[22]>2)
-estcoef[32]=as.numeric(estcoef[23]<2&estcoef[24]>2)
+estcoef[1]= mean(param$holdbeta0[burnin:sim-1],na.rm=T)
+estcoef[2]= mean(param$holdbeta01[burnin:sim-1],na.rm=T)
+estcoef[3]= mean(param$holdomega1[burnin:sim-1],na.rm=T)
+estcoef[4]= mean(param$holdalpha0[burnin:sim-1],na.rm=T)
+estcoef[5]= mean(param$holdalpha01[burnin:sim-1],na.rm=T)
+estcoef[6]= mean(param$holdpsi1[burnin:sim-1],na.rm=T)
+estcoef[7]= mean(param$holdpsi2[burnin:sim-1],na.rm=T)
+estcoef[8]= mean(param$holdomega2[burnin:sim-1],na.rm=T)
+estcoef[9]<-quantile(params$holdbeta0[burnin:sim-1],  probs = 0.025,na.rm=T)
+estcoef[10]<-quantile(param$holdbeta0[burnin:sim-1],  probs = 0.975,na.rm=T)
+estcoef[11]<-quantile(param$holdbeta01[burnin:sim-1],  probs = 0.025,na.rm=T)
+estcoef[12]<-quantile(param$holdbeta01[burnin:sim-1],  probs = 0.975,na.rm=T)
+estcoef[13]<-quantile(param$holdomega1[burnin:sim-1],  probs = 0.025,na.rm=T)
+estcoef[14]<-quantile(param$holdomega1[burnin:sim-1],  probs = 0.975,na.rm=T)
+estcoef[15]<-quantile(param$holdalpha0[burnin:sim-1],  probs = 0.025,na.rm=T)
+estcoef[16]<-quantile(param$holdalpha0[burnin:sim-1],  probs = 0.975,na.rm=T)
+estcoef[17]<-quantile(param$holdalpha01[burnin:sim-1],  probs = 0.025,na.rm=T)
+estcoef[18]<-quantile(param$holdalpha01[burnin:sim-1],  probs = 0.975,na.rm=T)
+estcoef[19]<-quantile(param$holdpsi1[burnin:sim-1],  probs = 0.025,na.rm=T)
+estcoef[20]<-quantile(param$holdpsi1[burnin:sim-1],  probs = 0.975,na.rm=T)
+estcoef[21]<-quantile(param$holdpsi2[burnin:sim-1],  probs = 0.025,na.rm=T)
+estcoef[22]<-quantile(param$holdpsi2[burnin:sim-1],  probs = 0.975,na.rm=T)
+estcoef[23]<-quantile(param$holdomega2[burnin:sim-1],  probs = 0.025,na.rm=T)
+estcoef[24]<-quantile(param$holdomega2[burnin:sim-1],  probs = 0.975,na.rm=T)
 
+print(estcoef[c(T,F)])
 
-#dev.off()
 if(write){
 fname <- paste('params',array_id,'.txt',sep="")
 write.table(params, file=fname, sep="\t", row.names=F, col.names=T)
@@ -1209,5 +1165,8 @@ fname6 <- paste('estimatedcoef',array_id,'.txt',sep="")
 write.table(estcoef, file=fname6, sep="\t", row.names=F, col.names=T)
 fname7 <- paste('covs',array_id,'.txt',sep="")
 write.table(covs, file=fname7, sep="\t",  col.names=T)}
+
 }
 
+final_results(params_matrix = params_matrix, write = F, holdR = res$params$holdR,
+              holdS = res$params$holdS, res = res)
