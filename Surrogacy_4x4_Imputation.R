@@ -5,11 +5,14 @@ library(coda)
 library(mvtnorm)
 library(MCMCpack)
 
+holdSmatrix = F
+holdRmatrix = F
+
 ##simulate data
 array_id = 1; array_id = as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 if(is.na(array_id)) array_id = 1
 n = 300
-SIM = 500
+SIM = 100
 
 generatedata = function(n, mu, psi2, psi1, omega1, omega2, sig){
 
@@ -127,7 +130,8 @@ fdeltBeta= function(n, R, j){
 run_sim = function(SIM, ST, X, n){
  
 burnin = 0.3 * SIM
- 
+trt = c(rep(0, n/2), rep(1, n/2))
+
 {holdmu= matrix(rep(0,4*SIM),4,SIM)
 holdmu1 = matrix(rep(0,4*SIM),4,SIM)
 
@@ -162,7 +166,6 @@ R[2,4] = 0.7; R[3,4] = 0.3
 for(i in 2:4){ for(j in 1:(i-1)){ R[i,j] = R[j,i]}}
 XmatS=cbind(rep(1,n),X)
 sim=2
-trt = c(rep(0, n/2), rep(1, n/2))
 
 holdalpha0[1] = coef(lm(ST[trt==0,1] ~ X[trt==0]))[1]
 holdalpha01[1] = coef(lm(ST[trt==1,2] ~ X[trt==1]))[1]
@@ -249,6 +252,7 @@ mu=cbind(rep(holdalpha0[sim],n)+holdpsi1[sim]*X,
 
 resid= ST-t(matrix((mu),4,n,byrow=T))
 cor(resid)
+var(resid)
 
 a = b = 0.1
 s1 = rinvgamma(1, shape = a + n/2, scale = (sum(tmp1^2)/2 + b))
@@ -261,14 +265,26 @@ s2 = rinvgamma(1, shape = a + n/4, scale = (sum(tmp2^2)/2 + b))
 s3 = rinvgamma(1, shape = a + n/4, scale = (sum(tmp3^2)/2 + b))
 s4 = rinvgamma(1, shape = a + n/4, scale = (sum(tmp4^2)/2 + b))
 
+
+s1 = sd(tmp1)
+s2 = sd(tmp2)
+s3 = sd(tmp3)
+s4 = sd(tmp4)
+
 S[1,1] = s1
 S[2,2] = s2
 S[3,3] = s3
 S[4,4] = s4
 
-#print(S)
-# S = holdS[,,1]
+print(S)
 
+if(any(S>1)) break
+
+#print(S)
+if(holdSmatrix) S = holdS[,,1]
+
+
+if(!holdRmatrix){
 ##r12
 a12=(R[3,4]^2-1)
 b12=2*R[1,4]*R[2,4]-2*R[1,3]*R[2,4]*R[3,4]-2*R[1,4]*R[2,3]*R[3,4]+2*R[1,3]*R[2,3]
@@ -876,6 +892,8 @@ R[3,4] = r34
 R[4,3] = r34
 
 if(any(eigen(R)$values<0)){ next}
+
+}
 
 holdmu[,sim] = c(holdalpha0[sim],holdalpha01[sim],holdbeta0[sim],holdbeta01[sim])
 holdmu1[,sim] = c(holdalpha0[sim]+holdpsi1[sim],holdalpha01[sim]+holdpsi2[sim],holdbeta0[sim]+holdomega1[sim],holdbeta01[sim]+holdomega2[sim])
