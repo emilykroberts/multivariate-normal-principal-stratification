@@ -1,0 +1,16 @@
+Package: surrogacy
+Type: Package
+Title: Surrogacy
+Version: 0.9.0.9999
+Date: 2022-08-14
+Authors@R: person("Emily", "Roberts", role=c("aut","cre"), email="@gmail.com")
+Maintainer: Emily Roberts <@gmail.com>
+Description: Desribe details of package with lit references.
+License: GPL (>= 2)
+Depends: R (>= 3.5.0)
+Imports: MASS, mvtnorm, MCMCpack, LaplacesDemon, ggplot2, survival, survminer, frailtyEM, frailty pack, truncnorm, latex2exp, kableExtra, Fast, stable, geforce, wesanderson, cowplot
+RoxygenNote: 7.2.1
+Encoding: UTF-8
+URL: https://github.com/name/repo
+BugReports: https://github.com/name/repo/issues
+LazyData: true

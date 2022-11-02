@@ -276,9 +276,9 @@ S[2,2] = s2
 S[3,3] = s3
 S[4,4] = s4
 
-print(S)
+#print(S)
 
-if(any(S>1)) break
+#if(any(S>1)) break
 
 #print(S)
 if(holdSmatrix) S = holdS[,,1]
