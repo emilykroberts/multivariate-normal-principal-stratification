@@ -4,6 +4,17 @@
 
 This package can be installed using the following R code:
 
+```r
+install.packages("devtools")
+```
+
+```r
+devtools::install_github("emilykroberts/multivariate-normal-principal-stratification")
+
+library(mvnPS)
+```
+
+
 in development
 
 ### Resources
