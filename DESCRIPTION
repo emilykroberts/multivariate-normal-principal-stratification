@@ -3,9 +3,9 @@ Type: Package
 Title: mvnPS
 Version: 0.9.0.9999
 Date: 2022-12-02
-Authors@R: person("Emily", "Roberts", role=c("aut","cre"), email="@gmail.com")
-Maintainer: Emily Roberts <@gmail.com>
-Description: Desribe details of package with lit references.
+Authors@R: person("Emily", "Roberts", role=c("aut","cre"), email="emily-roberts-1@uiowa.edu")
+Maintainer: Emily Roberts <emily-roberts-1@uiowa.edu>
+Description: Run surrogacy validation for normally distributed surrogate and true outcome.
 License: GPL (>= 2)
 Depends: R (>= 3.5.0)
 Imports: corpcor, bayesSurv, MASS, coda, mvtnorm, MCMCpack

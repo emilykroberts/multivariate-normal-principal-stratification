@@ -13,7 +13,8 @@
 #' @return dataset
 #'
 #' @examples 
-#' example(generatedata = function(n = 100, mu = c(0, 2, 3, 4), psi2 = 0, psi1 = 0, omega1 = 1, omega2 = 1, sig = 1))
+#' example(generatedata(n = 100, mu = c(0, 2, 3, 4), 
+#' psi2 = 0, psi1 = 0, omega1 = 1, omega2 = 1, sig = 1))
      
 generatedata = function(n, mu, psi2, psi1, omega1, omega2, sig){
 
