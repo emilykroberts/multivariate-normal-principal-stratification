@@ -2,6 +2,10 @@
 ### R code for multivariate normal model for surrogate endpoint validation
 ---
 
+This package can be installed using the following R code:
+
+in development
+
 ### Resources
 
 * [Ask a question/ Open an issue: coming soon](https://github.com/emilykroberts) (GitHub issues for bug reports, feature requests)
@@ -13,6 +17,10 @@ Run surrogacy validation for normally distributed surrogate and true outcome.
 ### Simulation Function
 
 run_sim.R is the main function to run the simulations.
+
+### Contributing 
+
+If you are interested in contributing to the development please open an issue to request.
 
 ### References and other literature
 
