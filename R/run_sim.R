@@ -20,7 +20,7 @@ trt = c(rep(0, n/2), rep(1, n/2))
 holdmu1 = matrix(rep(0,4*SIM),4,SIM)
 
 holdS= array(rep(0,4*4*SIM),dim=c(4,4,SIM))
-holdR= array(rep(0,4*4*SIM),dim=c(4,4,SIM))
+holdR= array(rep(0.1,4*4*SIM),dim=c(4,4,SIM))
 holdST= array(rep(0,4*n*SIM),dim=c(4,n,SIM))
 holdR[,,1] = R = (diag(c(1,1,1,1))); holdS[,,1] = S = (diag(c(1,1,1,1)))
 # identified parameters
@@ -47,6 +47,8 @@ tauSS0 =tauSS1 =tauST0 =tauST1 =c(1)
 #prelim values
 R[1,2] = 0.3; R[1,3] = 0.7; R[1,4] = 0.15; R[2,3] = 0.15
 R[2,4] = 0.7; R[3,4] = 0.3
+holdR[,,1] = R
+
 for(i in 2:4){ for(j in 1:(i-1)){ R[i,j] = R[j,i]}}
 XmatS=cbind(rep(1,n),X)
 sim=2
@@ -63,7 +65,7 @@ while(sim<=SIM){
 
 S = holdS[,,sim-1]
 R = holdR[,,sim-1]
-SIG= S%*%R%*%S
+SIG = S%*%R%*%S
 
 mu=cbind(rep(holdalpha0[sim-1],n)+holdpsi1[sim-1]*X,
   rep(holdalpha01[sim-1],n)+holdpsi2[sim-1]*X,
@@ -73,11 +75,14 @@ mu=cbind(rep(holdalpha0[sim-1],n)+holdpsi1[sim-1]*X,
 
 for(i in 1:n){
 if(trt[i] ==0){
-ST[i,c(2,4)] = c(mu[i,c(2,4)]+(SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)]))%*%(ST[i,c(1,3)]-mu[i,c(1,3)]))+
+  
+#(SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)])) %*% (ST[i,c(1,3)]))
+
+ST[i,c(2,4)] = c(mu[i,c(2,4)]+(SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)]))%*%as.matrix(t(ST[i,c(1,3)]-mu[i,c(1,3)])))+
 mvrnorm(1,c(0,0),SIG[c(2,4),c(2,4)]-SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)])%*%SIG[c(1,3),c(2,4)])
 }
 if(trt[i] ==1){
-ST[i,c(1,3)] = c(mu[i,c(1,3)]+(SIG[c(1,3),c(2,4)]%*%ginv(SIG[c(2,4),c(2,4)]))%*%(ST[i,c(2,4)]-mu[i,c(2,4)]))+
+ST[i,c(1,3)] = c(mu[i,c(1,3)]+(SIG[c(1,3),c(2,4)]%*%ginv(SIG[c(2,4),c(2,4)]))%*%as.matrix(t(ST[i,c(2,4)]-mu[i,c(2,4)])))+
 mvrnorm(1, c(0,0),SIG[c(1,3),c(1,3)]-SIG[c(1,3),c(2,4)]%*%ginv(SIG[c(2,4),c(2,4)])%*%SIG[c(2,4),c(1,3)])
 }
  }

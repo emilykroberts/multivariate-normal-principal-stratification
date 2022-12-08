@@ -14,49 +14,6 @@ if(is.na(array_id)) array_id = 1
 n = 300
 SIM = 100
 
-generatedata = function(n, mu, psi2, psi1, omega1, omega2, sig){
-
-S= diag(c(sig, sig, sig, sig))
-R= matrix(rep(0,4*4),4,4)
-R[1,1] = 1; R[2,2] = 1; R[3,3] = 1; R[4,4] = 1; R[1,2] = 0.21428; R[1,3] = 0.7; R[1,4] = 0.15; R[2,3] = 0.15
-R[2,4] = 0.7; R[3,4] = 0.15
-
-
-for(i in 2:4){
- for(j in 1:(i-1)){
- R[i,j] = R[j,i] }}
-
-
-# (R[2,4]*S[2,2]*S[4,4]-R[1,4]*S[1,1]*S[4,4]-R[2,3]*S[2,2]*S[3,3]+
-#  R[1,3]*S[1,1]*S[3,3])/(S[1,1]^2+S[2,2]^2-2*R[1,2]*S[1,1]*S[2,2])
-
-
-Sig= S%*%R%*%S
-
-X = rbinom(n,1, prob=.5)
-X = rep(0, n)
-
-samp= mvrnorm(n, mu, Sig)
-samp[,c(1)] =samp[,1] + psi1 %*% X
-samp[,c(2)] =samp[,2] + psi2 %*% X
-samp[,c(3)] =samp[,3] + omega1 %*% X
-samp[,c(4)] =samp[,4] + omega2 %*% X
-
-trt= c(rep(0,n/2), rep(1, n/2))
-
-ST= samp
-# ST[1:(n/2),2] = 0
-# ST[1:(n/2),4] = 0
-# ST[(n/2 + 1):n,1] = 0
-# ST[(n/2 + 1):n,3] = 0
-
-ST = cbind(ST, X)
-
-return(ST)
-
-}
-
-
 mu= c(2, 3.4, 4, 5)
 sig = 0.5
 psi2=0; psi1 =0; omega1 =0; omega2=0 #main effects of x
@@ -64,67 +21,6 @@ psi2=0; psi1 =0; omega1 =0; omega2=0 #main effects of x
 set.seed(323)
 ST = generatedata(n = n, mu = mu, psi2 = psi2, psi1 = psi1, omega1 = omega1, omega2 = omega2, sig = sig)
 X = ST[,5]
-
-nearest = function(x, xval, outside=FALSE, na.rm=FALSE) # nearest function from Genkern
-{
- 
- # Do the NA handling
- # put it all together into a data frame or na.omit doesn't work
- x1 = x
- z = data.frame(x, x)
- # if NAs not allowed fail the function
- if(na.rm == FALSE){na.fail(z)}
- # get rid of NA cases
- if(na.rm == TRUE){z = na.omit(z)}
- # reassign the vectors with NAs removed
- x = z$x
- 
- 
- # if the value is outside the range of the vector and it isn't acceptable
- # then issue an error and stop
- if(outside == FALSE){if((max(x) <= xval) || (min(x) >= xval)) {stop("value outside vector range")}}
- 
- # if the value is outside the range of the vector and this is acceptable then
- # merely assign one of the index with one of the extreme values in it
- 
- if(outside == TRUE)
- {
- if((max(x) <= xval) || (min(x) >= xval))
- {
- sorx = sort(x)
- if(abs(sorx[1] - xval) < abs(sorx[length(sorx)]- xval))
- {index = 1; vally = sorx[index]; index = which(x1 == vally); return(index)}
- 
- if(abs(sorx[1] - xval) > abs(sorx[length(sorx)]- xval))
- {index = length(sorx); vally = sorx[index]; index = which(x1 == vally); return(index)}
- }
- }
- 
- 
- # for most cases in which the value falls within the vector find the nearest
- # value and assign that index to the return value
- sorx = sort(x)
- upp = which(sorx >= xval)[1]
- low = which(sorx <= xval); low = low[length(low)]
- upp = sorx[upp]; low = sorx[low]
- 
- if(upp == low) {index = which(x == upp)}
- if((abs(upp - xval)) >= (abs(low - xval))) {index = which(x1 == low)}
- if((abs(upp - xval)) < (abs(low - xval))) {index = which(x1 == upp)}
- 
- return(index)
-}
-
-fdelt = function(n, R, j){ return(-(n/2)*log(det(R))+(-0.5*j)				)}
-
-fdeltBeta = function(n, R, j){
- p = 2.7; q = 6 # want p>q
- a = -0.4 # lower bound of beta
- b = 1 # upper bound of beta
- return( -(n/2) * log(det(R)) + (-0.5 * j) + (q - 1) * log(b - R[2,3]) + # beta
-  (p - 1) * log(R[2,3] - a) ) # alpha
-}
-
 
 run_sim = function(SIM, ST, X, n){
  
