@@ -4,7 +4,7 @@
 \alias{generatedata}
 \title{simulate data for simulations}
 \usage{
-generatedata(n, mu, psi2, psi1, omega1, omega2, sig)
+generatedata(n, mu, psi2, psi1, omega1, omega2, sig, R)
 }
 \arguments{
 \item{n}{sample size}

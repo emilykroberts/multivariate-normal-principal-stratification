@@ -61,6 +61,8 @@ holdbeta01[1] = coef(lm(ST[trt==1,4] ~ X[trt==1]))[1]
 ST = ST[,1:4]
 }
 
+holdSmatrix = holdRmatrix = FALSE
+
 while(sim<=SIM){
 
 S = holdS[,,sim-1]

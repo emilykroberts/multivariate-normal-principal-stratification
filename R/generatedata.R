@@ -9,6 +9,7 @@
 #' @param omega1 coefficient for X for T(0)
 #' @param omega2 coefficient for X for T(1)
 #' @param sig variance parameter
+#' @param R correlation matrix
 #'
 #' @return dataset
 #'
