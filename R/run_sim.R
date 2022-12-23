@@ -76,21 +76,36 @@ mu=cbind(rep(holdalpha0[sim-1],n)+holdpsi1[sim-1]*X,
 
 
 for(i in 1:n){
-if(trt[i] ==0){
+
   
-#(SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)])) %*% (ST[i,c(1,3)]))
+  if(trt[i] ==0){
 
-ST[i,c(2,4)] = c(mu[i,c(2,4)]+(SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)]))%*%as.matrix(t(ST[i,c(1,3)]-mu[i,c(1,3)])))+
-mvrnorm(1,c(0,0),SIG[c(2,4),c(2,4)]-SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)])%*%SIG[c(1,3),c(2,4)])
-}
-if(trt[i] ==1){
-ST[i,c(1,3)] = c(mu[i,c(1,3)]+(SIG[c(1,3),c(2,4)]%*%ginv(SIG[c(2,4),c(2,4)]))%*%as.matrix(t(ST[i,c(2,4)]-mu[i,c(2,4)])))+
-mvrnorm(1, c(0,0),SIG[c(1,3),c(1,3)]-SIG[c(1,3),c(2,4)]%*%ginv(SIG[c(2,4),c(2,4)])%*%SIG[c(2,4),c(1,3)])
-}
- }
+    #(SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)])) %*% (ST[i,c(1,3)]))
 
-colMeans(ST)
-cor(ST)
+    ST[i,c(2,4)] = c(mu[i,c(2,4)]+(SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)]))%*%(as.matrix(t(ST[i,c(1,3)]-mu[i,c(1,3)]))))+
+      mvrnorm(1,c(0,0),SIG[c(2,4),c(2,4)]-SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)])%*%SIG[c(1,3),c(2,4)])
+  }
+
+  if(trt[i] ==1){
+    ST[i,c(1,3)] = c(mu[i,c(1,3)]+(SIG[c(1,3),c(2,4)]%*%ginv(SIG[c(2,4),c(2,4)]))%*%(as.matrix(t(ST[i,c(2,4)]-mu[i,c(2,4)]))))+
+      mvrnorm(1, c(0,0),SIG[c(1,3),c(1,3)]-SIG[c(1,3),c(2,4)]%*%ginv(SIG[c(2,4),c(2,4)])%*%SIG[c(2,4),c(1,3)])
+  }
+
+# if(trt[i] ==0){
+#   
+# #(SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)])) %*% (ST[i,c(1,3)]))
+# 
+# ST[i,c(2,4)] = c(mu[i,c(2,4)]+(SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)]))%*%t(as.matrix(t(ST[i,c(1,3)]-mu[i,c(1,3)]))))+
+# mvrnorm(1,c(0,0),SIG[c(2,4),c(2,4)]-SIG[c(2,4),c(1,3)]%*%ginv(SIG[c(1,3),c(1,3)])%*%SIG[c(1,3),c(2,4)])
+# }
+#   
+# if(trt[i] ==1){
+# ST[i,c(1,3)] = c(mu[i,c(1,3)]+(SIG[c(1,3),c(2,4)]%*%ginv(SIG[c(2,4),c(2,4)]))%*%t(as.matrix(t(ST[i,c(2,4)]-mu[i,c(2,4)]))))+
+# mvrnorm(1, c(0,0),SIG[c(1,3),c(1,3)]-SIG[c(1,3),c(2,4)]%*%ginv(SIG[c(2,4),c(2,4)])%*%SIG[c(2,4),c(1,3)])
+# }
+
+    }
+
 
 #estimate coefficients #Estimate S0 model
 Xmat = XmatS = cbind(rep(1,n),X)
@@ -811,7 +826,16 @@ params_matrix = data.frame(holdpsi1 = holdpsi1, holdpsi2 = holdpsi2, holdomega1 
      int = int, slope = slope,
      r12 = holdR[1,2,], r13 = holdR[1,3,], r14 = holdR[1,4,],
      r23 = holdR[2,3,], r24 = holdR[2,4,], r34 = holdR[3,4,],
-     s1 = holdS[1,1,], s2 = holdS[2,2,], s3 = holdS[3,3,], s4 = holdS[4,4,])
+     s1 = holdS[1,1,], s2 = holdS[2,2,], s3 = holdS[3,3,], s4 = holdS[4,4,],
+     holdpsi1SE = sd(holdpsi1, na.rm = T), holdpsi2SE = sd(holdpsi2, na.rm = T), holdomega1SE = sd(holdomega1, na.rm = T),
+     holdomega2SE = sd(holdomega2, na.rm = T),
+     holdalpha0SE = sd(holdalpha0, na.rm = T), holdalpha01SE = sd(holdalpha01, na.rm = T), holdbeta0SE = sd(holdbeta0, na.rm = T),
+     holdbeta01SE = sd(holdbeta01, na.rm = T),
+     intSE = sd(int, na.rm = T), slopeSE = sd(slope, na.rm = T),
+     r12SE = sd(holdR[1,2,], na.rm = T), r13SE = sd(holdR[1,3,], na.rm = T), r14SE = sd(holdR[1,4,], na.rm = T),
+     r23SE = sd(holdR[2,3,], na.rm = T), r24SE = sd(holdR[2,4,], na.rm = T), r34SE = sd(holdR[3,4,], na.rm = T),
+     s1SE = sd(holdS[1,1,], na.rm = T), s2SE = sd(holdS[2,2,], na.rm = T), s3SE = sd(holdS[3,3,], na.rm = T), 
+     s4SE = sd(holdS[4,4,], na.rm = T))
 
 params = list(holdS = holdS, holdR = holdR)
 

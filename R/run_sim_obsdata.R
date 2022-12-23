@@ -5,16 +5,18 @@
 #' @param SIM number of iterations of mcmc to run
 #' @param ST dataset
 #' @param X covariate
-#' @param n sample size
+#' @param trt treatment vector
 #'
 #' @return simulation results
 #'
 #' @examples 
 #' example(run_sim(SIM = 1000, ST = STdat, X = X, n = 100))
-run_sim_obsdata = function(SIM, ST, X, n){
+run_sim_obsdata = function(SIM, ST, X, trt){
  
+n = nrow(ST)
 burnin = 0.3 * SIM
-trt = c(rep(0, n/2), rep(1, n/2))
+n1 = sum(trt == 1, na.rm = T)
+n0 = sum(trt == 0, na.rm = T)
 
 {holdmu= matrix(rep(0,4*SIM),4,SIM)
 holdmu1 = matrix(rep(0,4*SIM),4,SIM)
@@ -30,9 +32,9 @@ holdS[2,2,1] = sd(ST[trt==1, 2])
 holdS[3,3,1] = sd(ST[trt== 0, 3])
 holdS[4,4,1] = sd(ST[trt==1, 4])
 
-holdpsi1 = (rep(0,1*SIM));holdpsi2= (rep(0,1*SIM))
+holdpsi1 = (rep(0,1*SIM)); holdpsi2= (rep(0,1*SIM))
 holdomega1 = (rep(0,1*SIM)); holdomega2= (rep(0,1*SIM))
-holdalpha0 = (rep(0,1*SIM));holdalpha01 = (rep(0,1*SIM))
+holdalpha0 = (rep(0,1*SIM)); holdalpha01 = (rep(0,1*SIM))
 holdbeta0 = (rep(0,1*SIM)); holdbeta01 = (rep(0,1*SIM))
 
 slope= array(0,c((SIM),1))
