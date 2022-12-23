@@ -166,7 +166,7 @@ summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(2,4), c(2,4)] %*
 
 ratio = exp(fdelt(n/2, R = R2, j = sum(summand)))*(1/(1- holdR[2,4,sim-1]^2))
 
-R2 = holdR[,,sim-1]; R2[2,4] = R2[3,1] = holdR[2,4,sim-1]
+R2 = holdR[,,sim-1]; R2[2,4] = R2[4,2] = holdR[2,4,sim-1]
 
 summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(2,4), c(2,4)] %*% R2[c(2,4), c(2,4)] %*% S[c(2,4), c(2,4)]) %*% (resid) )
 
