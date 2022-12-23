@@ -8,13 +8,13 @@ library(Surrogate)
 library(HardyWeinberg)
 library(extraDistr)
 
-if(T){
- source("~/OneDrive - University of Iowa/Rpackage code/multivariate-normal-principal-stratification/R/generatedata.R")
- source("~/OneDrive - University of Iowa/Rpackage code/multivariate-normal-principal-stratification/R/run_sim.R")
- source("~/OneDrive - University of Iowa/Rpackage code/multivariate-normal-principal-stratification/R/run_sim_unequalarms.R")
- source("~/OneDrive - University of Iowa/Rpackage code/multivariate-normal-principal-stratification/R/fdelt.R")
- source("~/OneDrive - University of Iowa/Rpackage code/multivariate-normal-principal-stratification/R/fdeltBeta.R")
- source("~/OneDrive - University of Iowa/Rpackage code/multivariate-normal-principal-stratification/R/nearest.R")
+#setwd("./R")
+setwd("~/Library/CloudStorage/OneDrive-UniversityofIowa/Rpackage code/multivariate-normal-principal-stratification/R")
+
+# keep source files in a folder called R directory
+for(i in 1:(length(list.files(pattern = "\\.R$")))){
+  source(list.files(pattern = "\\.R$")[i]
+  )
 }
 
 ##simulate data
@@ -31,7 +31,7 @@ set.seed(323)
 ST = generatedata(n = n, mu = mu, psi2 = psi2, psi1 = psi1, omega1 = omega1, omega2 = omega2, sig = sig)
 X = ST[,5]
 
-run_sim_obsdata = function(SIM, ST, X, n){
+#run_sim_obsdata = function(SIM, ST, X, n){
  
 burnin = 0.3 * SIM
 trt = c(rep(0, n/2), rep(1, n/2))
@@ -255,289 +255,21 @@ return(result)
 
 }
 
-res = run_sim_obsdata(SIM = SIM, ST = ST, X = X, n = n)
+res = run_sim_obsdata(SIM = SIM, ST = ST, X = X, trt = c(rep(0, n/2), rep(1, n/2)))
 
 params_matrix = res$params_matrix
 
-holdR = res$params$holdR
-holdS = res$params$holdS
+plot_traceplots(params = res, variable = "int")
+plot_traceplots(params = res, variable = "slope")
+plot_traceplots(params = res, variable = "r13")
+plot_traceplots(params = res, variable = "r24")
+plot_traceplots(params = res, variable = "r34")
+plot_traceplots(params = res, variable = "s1")
+plot_traceplots(params = res, variable = "holdalpha0")
+plot_traceplots(params = res, variable = "holdalpha01")
+plot_traceplots(params = res, variable = "holdbeta0")
+plot_traceplots(params = res, variable = "holdbeta01")
 
-
- 
-plot_traceplots = function(params_matrix, variable){
- 
- plot(eval(parse(text = paste0("params_matrix$", variable))), ylab = "Parameter Draw",
- xlab = "MCMC Iteration", main = paste("Traceplot of Parameter", variable))
- 
- 
-}
-
-plot_traceplots(params_matrix = params_matrix, variable = "int")
-plot_traceplots(params_matrix = params_matrix, variable = "r13")
-plot_traceplots(params_matrix = params_matrix, variable = "r24")
-plot_traceplots(params_matrix = params_matrix, variable = "r34")
-plot_traceplots(params_matrix = params_matrix, variable = "s1")
-plot_traceplots(params_matrix = params_matrix, variable = "holdalpha0")
-plot_traceplots(params_matrix = params_matrix, variable = "holdalpha01")
-plot_traceplots(params_matrix = params_matrix, variable = "holdbeta0")
-plot_traceplots(params_matrix = params_matrix, variable = "holdbeta01")
-
-other_methods = function(){
- gam = array(0,c((sim-1),1))
- for (i in 1:(sim-1)){
- gam[i] = 0.5*((holdS[3,3,i]/holdS[1,1,i])*holdR[1,3,i]+(holdS[4,4,i]/holdS[2,2,i])*holdR[2,4,i])
- }
- alph= array(0,c((sim-1),1))
- for (i in 1:(sim-1)){
- alph[i] =holdmu[4,i]-holdmu[3,i]
- }
- 
- b1 = array(0,c((sim-1),1))
- for (i in 1:(sim-1)){
- b1[i] =(holdmu[4,i]-holdmu[3,i]) -((holdR[2,4,i]*holdS[4,4,i]/holdS[2,2,i])*holdmu[2,i]-(holdR[1,3,i]*holdS[3,3,i]/holdS[1,1,i])*holdmu[1,i])
- }
- b2= array(0,c((sim-1),1))
- for (i in 1:(sim-1)){
- b2[i] =(holdR[1,3,i]*holdS[3,3,i]/holdS[1,1,i])
- }
- 
- S10m = (holdST[2,,1:(sim-1)]-holdST[1,,1:(sim-1)])%*%rep(1,(sim-1))/(sim-1)
- Y10m = (holdST[4,,1:(sim-1)]-holdST[3,,1:(sim-1)])%*%rep(1,(sim-1))/(sim-1)
- mod5= lm(Y10m~S10m)
- 
- mu= array(0,c((sim-1),1))
- for (i in 1:(sim-1)){
- mu[i] =holdmu[2,i]-holdmu[1,i]
- }
- 
- 
- prentice= data.frame(bet_s=numeric(1), SEbs=numeric(1),bet_trtt=numeric(1), SEbtt=numeric(1), 
-   bet_trts=numeric(1), SEbts=numeric(1), gam_trt=numeric(1), SEgt=numeric(1),
-   gam_s=numeric(1), SEgs=numeric(1))
- 
- pren.post= data.frame(bet_sp=numeric(1), SEbet_sp=numeric(1),bet_trttp=numeric(1), SEbet_trttp=numeric(1), 
-  bet_trtsp=numeric(1), SEbet_trtsp=numeric(1), gam_trtp=numeric(1), SEgam_trtp=numeric(1), 
-  gam_sp=numeric(1),SEgam_sp=numeric(1))
- 
- 
- prentice[1] = summary(mod)$coefficient[2,1] ##effect of s on t
- prentice[2] = summary(mod)$coefficient[2,2] ## SE 
- prentice[3] = summary(mod1)$coefficient[2,1] ##effect of trt on t
- prentice[4] = summary(mod1)$coefficient[2,2] ## SE 
- prentice[5] = summary(mod2)$coefficient[2,1] ##effect of trt on s
- prentice[6] = summary(mod2)$coefficient[2,2] ## SE
- prentice[7] = summary(mod3)$coefficient[2,1] ##effect of trt on t given s
- prentice[8] = summary(mod3)$coefficient[2,2] ## SE 
- prentice[9] = summary(mod3)$coefficient[3,1] ##effect of s on t
- prentice[10] = summary(mod3)$coefficient[3,2] ## SE 
- 
- 
- PS[1] = summary(mod4)$coefficient[1,1] ##effect of s1-s0 on t1-t0 int
- PS[2] = summary(mod4)$coefficient[1,2] ## SE
- PS[3] = summary(mod4)$coefficient[2,1] ##effect of s1-s0 on t1-t0 slope
- PS[4] = summary(mod4)$coefficient[2,2] ## SE 
- 
- naive6= lm(Y10m~S10m+X)
- 
- naiveint= summary(naive6)$coefficient[1,1]
- naivedeltas= summary(naive6)$coefficient[2,1]
- naivex= summary(naive6)$coefficient[3,1]
- naivedeltase= summary(naive6)$coefficient[2,2]
- naivexse= summary(naive6)$coefficient[3,2]
- 
- naive7= lm(Y10m~S10m+X+S10m*X)
- 
- naiveint2= summary(naive7)$coefficient[1,1]
- naivedeltas2= summary(naive7)$coefficient[2,1]
- naivex2= summary(naive7)$coefficient[3,1]
- naiveinteract2= summary(naive7)$coefficient[4,1]
- naivedeltase2= summary(naive7)$coefficient[2,2]
- naivexse2= summary(naive7)$coefficient[3,2]
- naiveinteractse2= summary(naive7)$coefficient[4,2]
- 
- naiveresults= cbind(naiveint,naivedeltas,naivex,naivedeltase,
-  naivedeltase,naivexse,naiveint2,naivedeltas2,
-  naivex2,naiveinteract2,naivedeltase2,naivexse2,naiveinteractse2)
- 
-}
-
-final_results = function(params_matrix, write, holdR, holdS, res){
- ## save results
- param = params_matrix
- 
- n = res$args$n
- burnin = res$args$burnin
- sim = res$args$SIM
- 
-params= data.frame(mus0 =numeric(1), SEmus0 =numeric(1), mus1 =numeric(1), SEmus1 =numeric(1),
-  mut0 =numeric(1), SEmut0 =numeric(1), mut1 =numeric(1), SEmut1 =numeric(1),
-  sigs0 =numeric(1), SEsigs0 =numeric(1), sigs1 =numeric(1), SEsigs1 =numeric(1),
-  sigt0 =numeric(1), SEsigt0 =numeric(1),sigt1 =numeric(1), SEsigt1 =numeric(1), 
-  ps=numeric(1), SEps=numeric(1),p00 =numeric(1), SEp00 =numeric(1),
-  p01 =numeric(1),SEp01 =numeric(1),p10 =numeric(1),SEp10 =numeric(1),p11 =numeric(1),
-  SEp11 =numeric(1),pt=numeric(1),SEpt=numeric(1), S0l=numeric(1), S0u=numeric(1),
-  S1l=numeric(1), S1u=numeric(1), T0l=numeric(1),T0u=numeric(1), T1l=numeric(1),
-  T1u=numeric(1), psl=numeric(1), PSu=numeric(1),p00l=numeric(1), p00u=numeric(1),
-  p01l=numeric(1),p01u=numeric(1),p10l=numeric(1),p10u=numeric(1),p11l=numeric(1),
-  p11u=numeric(1),ptl=numeric(1),ptu=numeric(1))
-
-PS= data.frame(dat_int=numeric(1), dat_intSE=numeric(1),dat_sl=numeric(1), dat_slSE=numeric(1), 
-  mean_int=numeric(1), SEmean_int=numeric(1),L_int=numeric(1), U_int=numeric(1),mean_sl=numeric(1)
-  ,SEmean_sl=numeric(1),L_sl=numeric(1),U_sl=numeric(1),
-  postdat_int=numeric(1), postdat_intSE=numeric(1), postdat_sl=numeric(1), postdat_slSE=numeric(1),
-  mean_int=numeric(1), SEmean_int=numeric(1),L_int=numeric(1), U_int=numeric(1), covslint=numeric(1),covslint1 =numeric(1),
-  int_coverage=numeric(1), slope_coverage=numeric(1), int1_coverage=numeric(1))
-
-covs= data.frame(psl=numeric(1), psu=numeric(1),p00l=numeric(1), p00u=numeric(1),
-  p01l=numeric(1),p01u=numeric(1),p10l=numeric(1),p10u=numeric(1),p11l=numeric(1),
-  p11u=numeric(1),ptl=numeric(1),ptu=numeric(1),s0l=numeric(1),s0u=numeric(1)
-  ,s1l=numeric(1),s1u=numeric(1),t0l=numeric(1),t0u=numeric(1),t1l=numeric(1),t1u=numeric(1),
-  psind=numeric(1),p00ind=numeric(1),p01ind=numeric(1),p10ind=numeric(1),p11ind=numeric(1),ptind=numeric(1),
-  s0ind=numeric(1),s1ind=numeric(1),t0ind=numeric(1),t1ind=numeric(1))
-
-
-covs[2] = quantile(holdR[1,2,burnin:sim-1], probs = 0.975,na.rm =T)
-covs[3] = quantile(holdR[1,3,burnin:sim-1], probs = 0.025,na.rm =T)
-covs[4] = quantile(holdR[1,3,burnin:sim-1], probs = 0.975,na.rm =T)
-covs[5] = quantile(holdR[1,4,burnin:sim-1], probs = 0.025,na.rm =T)
-covs[6] = quantile(holdR[1,4,burnin:sim-1], probs = 0.975,na.rm =T)
-covs[7] = quantile(holdR[2,3,burnin:sim-1], probs = 0.025,na.rm =T)
-covs[8] = quantile(holdR[2,3,burnin:sim-1], probs = 0.975,na.rm =T)
-covs[9] = quantile(holdR[2,4,burnin:sim-1], probs = 0.025,na.rm =T)
-covs[10] = quantile(holdR[2,4,burnin:sim-1], probs = 0.975,na.rm =T)
-covs[11] = quantile(holdR[3,4,burnin:sim-1], probs = 0.025,na.rm =T)
-covs[12] = quantile(holdR[3,4,burnin:sim-1], probs = 0.975,na.rm =T)
-
-covs[13] = quantile(holdS[1,1,burnin:sim-1], probs = 0.025,na.rm =T)
-covs[14] = quantile(holdS[1,1,burnin:sim-1], probs = 0.975,na.rm =T)
-covs[15] = quantile(holdS[2,2,burnin:sim-1], probs = 0.025,na.rm =T)
-covs[16] = quantile(holdS[2,2,burnin:sim-1], probs = 0.975,na.rm =T)
-covs[17] = quantile(holdS[3,3,burnin:sim-1], probs = 0.025,na.rm =T)
-covs[18] = quantile(holdS[3,3,burnin:sim-1], probs = 0.975,na.rm =T)
-covs[19] = quantile(holdS[4,4,burnin:sim-1], probs = 0.025,na.rm =T)
-covs[20] = quantile(holdS[4,4,burnin:sim-1], probs = 0.975,na.rm =T)
-
-covs[21] = as.numeric((holdR[1,2,1]>covs[1])&(holdR[1,2,1]<covs[2]))
-covs[22] = as.numeric((holdR[1,3,1]>covs[3])&(holdR[1,2,1]<covs[4]))
-covs[23] = as.numeric((holdR[1,4,1]>covs[5])&(holdR[1,4,1]<covs[6]))
-covs[24] = as.numeric((holdR[2,3,1]>covs[7])&(holdR[2,3,1]<covs[8]))
-covs[25] = as.numeric((holdR[2,4,1]>covs[9])&(holdR[2,4,1]<covs[10]))
-covs[26] = as.numeric((holdR[3,4,1]>covs[11])&(holdR[3,4,1]<covs[12]))
-covs[27] = as.numeric((holdS[1,1,1]>covs[13])&(holdS[1,1,1]<covs[14]))
-covs[28] = as.numeric((holdS[2,2,1]>covs[15])&(holdS[2,2,1]<covs[16]))
-covs[29] = as.numeric((holdS[3,3,1]>covs[17])&(holdS[3,3,1]<covs[18]))
-covs[30] = as.numeric((holdS[4,4,1]>covs[19])&(holdS[4,4,1]<covs[20]))
-
-params[9] = mean(holdS[1,1,burnin:(sim-1)])
-params[10] = sqrt(var(holdS[1,1,burnin:(sim-1)]))
-params[11] = mean(holdS[2,2,burnin:(sim-1)])
-params[12] = sqrt(var(holdS[2,2,burnin:(sim-1)]))
-params[13] = mean(holdS[3,3,burnin:(sim-1)])
-params[14] = sqrt(var(holdS[3,3,burnin:(sim-1)]))
-params[15] = mean(holdS[4,4,burnin:(sim-1)])
-params[16] = sqrt(var(holdS[4,4,burnin:(sim-1)]))
-
-params[17] = mean(holdR[1,2,burnin:(sim-1)])
-params[18] = sqrt(var(holdR[1,2,burnin:(sim-1)]))
-params[19] = mean(holdR[1,3,burnin:(sim-1)])
-params[20] = sqrt(var(holdR[1,3,burnin:(sim-1)]))
-params[21] = mean(holdR[1,4,burnin:(sim-1)])
-params[22] = sqrt(var(holdR[1,4,burnin:(sim-1)]))
-params[23] = mean(holdR[2,3,burnin:(sim-1)])
-params[24] = sqrt(var(holdR[2,3,burnin:(sim-1)]))
-params[25] = mean(holdR[2,4,burnin:(sim-1)])
-params[26] = sqrt(var(holdR[2,4,burnin:(sim-1)]))
-params[27] = mean(holdR[3,4,burnin:(sim-1)])
-params[28] = sqrt(var(holdR[3,4,burnin:(sim-1)]))
-
-
-params[29] = quantile(holdS[1,1,burnin:sim-1], probs = 0.025,na.rm =T)
-params[30] = quantile(holdS[1,1,burnin:sim-1], probs = 0.975,na.rm =T)
-params[31] = quantile(holdS[2,2,burnin:sim-1], probs = 0.025,na.rm =T)
-params[32] = quantile(holdS[2,2,burnin:sim-1], probs = 0.975,na.rm =T)
-params[33] = quantile(holdS[3,3,burnin:sim-1], probs = 0.025,na.rm =T)
-params[34] = quantile(holdS[3,3,burnin:sim-1], probs = 0.975,na.rm =T)
-params[35] = quantile(holdS[4,4,burnin:sim-1], probs = 0.025,na.rm =T)
-params[36] = quantile(holdS[4,4,burnin:sim-1], probs = 0.975,na.rm =T)
-
-params[37] = quantile(holdR[1,2,burnin:sim-1], probs = 0.025,na.rm =T)
-params[38] = quantile(holdR[1,2,burnin:sim-1], probs = 0.975,na.rm =T)
-params[39] = quantile(holdR[1,3,burnin:sim-1], probs = 0.025,na.rm =T)
-params[40] = quantile(holdR[1,3,burnin:sim-1], probs = 0.975,na.rm =T)
-params[41] = quantile(holdR[1,4,burnin:sim-1], probs = 0.025,na.rm =T)
-params[42] = quantile(holdR[1,4,burnin:sim-1], probs = 0.975,na.rm =T)
-params[43] = quantile(holdR[2,3,burnin:sim-1], probs = 0.025,na.rm =T)
-params[44] = quantile(holdR[2,3,burnin:sim-1], probs = 0.975,na.rm =T)
-params[45] = quantile(holdR[2,4,burnin:sim-1], probs = 0.025,na.rm =T)
-params[46] = quantile(holdR[2,4,burnin:sim-1], probs = 0.975,na.rm =T)
-params[47] = quantile(holdR[3,4,burnin:sim-1], probs = 0.025,na.rm =T)
-params[48] = quantile(holdR[3,4,burnin:sim-1], probs = 0.975,na.rm =T)
-
-print(params)
-
-PS[5] = mean(param$int[burnin:sim-1],na.rm =T)
-PS[6] = sqrt(var(param$int[burnin:sim-1],na.rm =T))
-PS[7] = quantile(param$int[burnin:sim-1], probs = 0.025,na.rm =T)
-PS[8] = quantile(param$int[burnin:sim-1], probs = 0.975,na.rm =T)
-PS[9] = mean(param$slope[burnin:sim-1],na.rm =T)
-PS[10] = sqrt(var(param$slope[burnin:sim-1],na.rm =T))
-PS[11] = quantile(param$slope[burnin:sim-1], probs = 0.025,na.rm =T)
-PS[12] = quantile(param$slope[burnin:sim-1], probs = 0.975,na.rm =T)
-
-print(PS)
-
-estcoef= data.frame(beta0mean=numeric(1), beta01mean=numeric(1),omega1mean=numeric(1), alpha0mean=numeric(1),
-  alpha01mean=numeric(1),psi1mean=numeric(1),psi12mean=numeric(1),omega12mean=numeric(1),
-  beta0l=numeric(1),beta0u=numeric(1), beta01l=numeric(1),beta01u=numeric(1),omega1l=numeric(1),
-  omega1u=numeric(1), alpha0l=numeric(1),alpha0u=numeric(1),
-  alpha01l=numeric(1),alpha01u=numeric(1),psi1l=numeric(1),psi1u=numeric(1),
-  psi12l=numeric(1),psi12u=numeric(1),omega12l=numeric(1),omega12u=numeric(1))
-  
-estcoef[1] = mean(param$holdbeta0[burnin:sim-1],na.rm =T)
-estcoef[2] = mean(param$holdbeta01[burnin:sim-1],na.rm =T)
-estcoef[3] = mean(param$holdomega1[burnin:sim-1],na.rm =T)
-estcoef[4] = mean(param$holdalpha0[burnin:sim-1],na.rm =T)
-estcoef[5] = mean(param$holdalpha01[burnin:sim-1],na.rm =T)
-estcoef[6] = mean(param$holdpsi1[burnin:sim-1],na.rm =T)
-estcoef[7] = mean(param$holdpsi2[burnin:sim-1],na.rm =T)
-estcoef[8] = mean(param$holdomega2[burnin:sim-1],na.rm =T)
-estcoef[9] = quantile(param$holdbeta0[burnin:sim-1], probs = 0.025,na.rm =T)
-estcoef[10] = quantile(param$holdbeta0[burnin:sim-1], probs = 0.975,na.rm =T)
-estcoef[11] = quantile(param$holdbeta01[burnin:sim-1], probs = 0.025,na.rm =T)
-estcoef[12] = quantile(param$holdbeta01[burnin:sim-1], probs = 0.975,na.rm =T)
-estcoef[13] = quantile(param$holdomega1[burnin:sim-1], probs = 0.025,na.rm =T)
-estcoef[14] = quantile(param$holdomega1[burnin:sim-1], probs = 0.975,na.rm =T)
-estcoef[15] = quantile(param$holdalpha0[burnin:sim-1], probs = 0.025,na.rm =T)
-estcoef[16] = quantile(param$holdalpha0[burnin:sim-1], probs = 0.975,na.rm =T)
-estcoef[17] = quantile(param$holdalpha01[burnin:sim-1], probs = 0.025,na.rm =T)
-estcoef[18] = quantile(param$holdalpha01[burnin:sim-1], probs = 0.975,na.rm =T)
-estcoef[19] = quantile(param$holdpsi1[burnin:sim-1], probs = 0.025,na.rm =T)
-estcoef[20] = quantile(param$holdpsi1[burnin:sim-1], probs = 0.975,na.rm =T)
-estcoef[21] = quantile(param$holdpsi2[burnin:sim-1], probs = 0.025,na.rm =T)
-estcoef[22] = quantile(param$holdpsi2[burnin:sim-1], probs = 0.975,na.rm =T)
-estcoef[23] = quantile(param$holdomega2[burnin:sim-1], probs = 0.025,na.rm =T)
-estcoef[24] = quantile(param$holdomega2[burnin:sim-1], probs = 0.975,na.rm =T)
-
-print(estcoef)
-
-if(write){
-fname = paste('params',array_id,'.txt',sep="")
-write.table(params, file=fname, sep="\t", row.names=F, col.names=T)
-fname2 = paste('PS',array_id,'.txt',sep="")
-write.table(PS, file=fname2, sep="\t", row.names=F, col.names=T)
-fname3 = paste('prentice',array_id,'.txt',sep="")
-#write.table(prentice, file=fname3, sep="\t", row.names=F, col.names=T)
-fname4 = paste('postpren',array_id,'.txt',sep="")
-#write.table(pren.post, file=fname4, sep="\t", row.names=F, col.names=T)
-fname5 = paste('naivemodels',array_id,'.txt',sep="")
-#write.table(naiveresults, file=fname5, sep="\t", row.names=F, col.names=T)
-fname6 = paste('estimatedcoef',array_id,'.txt',sep="")
-write.table(estcoef, file=fname6, sep="\t", row.names=F, col.names=T)
-fname7 = paste('covs',array_id,'.txt',sep="")
-#write.table(covs, file=fname7, sep="\t", col.names=T)
-}
-
-}
 
 final_results(params_matrix = params_matrix, write = F, holdR = res$params$holdR,
   holdS = res$params$holdS, res = res)

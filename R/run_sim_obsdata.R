@@ -61,7 +61,6 @@ ST = ST[,1:4]
 
 
 holdSmatrix = F
-holdRmatrix = T
 
 
 while(sim<=SIM){
@@ -163,7 +162,7 @@ y = rnorm(1, 0.5 * log((1+holdR[2,4,sim-1]) / (1- holdR[2,4,sim-1])), sd = sqrt(
 
 R2 = holdR[,,sim-1]; R2[2,4] = R2[4,2] = ifisherz(y)
 
-summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(2,4), c(2,4)] %*% R2[c(1,3), c(1,3)] %*% S[c(2,4), c(2,4)]) %*% (resid) )
+summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(2,4), c(2,4)] %*% R2[c(2,4), c(2,4)] %*% S[c(2,4), c(2,4)]) %*% (resid) )
 
 ratio = exp(fdelt(n/2, R = R2, j = sum(summand)))*(1/(1- holdR[2,4,sim-1]^2))
 
@@ -189,7 +188,7 @@ R[1,3] = R[3,1] = r13
 
 SurICA <- ICA.ContCont(T0S0=R[1,3], T1S1=R[2,4], T0T0=S[3,3]^2, T1T1=S[4,4]^2, S0S0=S[1,1]^2, S1S1=S[2,2]^2,
                        T0T1=seq(0, 1, by=.2), T0S1=seq(0, 1, by=.2), T1S0=seq(0, 1, by=.2),
-                       S0S1=seq(0, 1, by=.2))
+                       S0S1=seq(0, 1, by=.2)) # may be able to put in the variance or correlations as a range and do this once
 
 matrices = SurICA$Pos.Def
 m = matrices[sample(nrow(matrices), 1), ]
