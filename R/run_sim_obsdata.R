@@ -6,13 +6,19 @@
 #' @param ST dataset
 #' @param X covariate
 #' @param trt treatment vector
+#' @param condindfit boolean for conditional independence
+
 #'
 #' @return simulation results
 #'
 #' @examples 
 #' example(run_sim(SIM = 1000, ST = STdat, X = X, n = 100))
-run_sim_obsdata = function(SIM, ST, X, trt){
+run_sim_obsdata = function(SIM, ST, X, trt, condindfit){
  
+  if(missing(condindfit)){
+    condindfit = F
+  }
+  
 n = nrow(ST)
 burnin = 0.3 * SIM
 n1 = sum(trt == 1, na.rm = T)
@@ -107,15 +113,15 @@ mu= cbind(rep(holdalpha0[sim],n) + holdpsi1[sim]*X,
  rep(holdbeta01[sim],n) + holdomega2[sim]*X)
 
 a = b = 0.1
-s1 = MCMCpack::rinvgamma(1, shape = a + n/8, scale = (sum(tmp1^2)/2 + b))
-s2 = MCMCpack::rinvgamma(1, shape = a + n/8, scale = (sum(tmp2^2)/2 + b))
-s3 = MCMCpack::rinvgamma(1, shape = a + n/8, scale = (sum(tmp3^2)/2 + b))
-s4 = MCMCpack::rinvgamma(1, shape = a + n/8, scale = (sum(tmp4^2)/2 + b))
+s1 = MCMCpack::rinvgamma(1, shape = a + n0/2, scale = (sum(tmp1^2)/2 + b))
+s2 = MCMCpack::rinvgamma(1, shape = a + n1/2, scale = (sum(tmp2^2)/2 + b))
+s3 = MCMCpack::rinvgamma(1, shape = a + n0/2, scale = (sum(tmp3^2)/2 + b))
+s4 = MCMCpack::rinvgamma(1, shape = a + n1/2, scale = (sum(tmp4^2)/2 + b))
 
-S[1,1] = s1
-S[2,2] = s2
-S[3,3] = s3
-S[4,4] = s4
+S[1,1] = sqrt(s1)
+S[2,2] = sqrt(s2)
+S[3,3] = sqrt(s3)
+S[4,4] = sqrt(s4)
 
 if(holdSmatrix){S = holdS[,,1]}
 
@@ -133,12 +139,14 @@ phat = cor(tmp1, tmp3)
 y = rnorm(1, 0.5 * log((1+holdR[1,3,sim-1]) / (1- holdR[1,3,sim-1])), sd = sqrt(1/(n-3)))
 
 R2 = holdR[,,sim-1]; R2[1,3] = R2[3,1] = ifisherz(y)
+if(any(eigen(R2)$values<0)) next;
 
 summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(1,3), c(1,3)] %*% R2[c(1,3), c(1,3)] %*% S[c(1,3), c(1,3)]) %*% (resid) )
 
 ratio = exp(fdelt(n/2, R = R2, j = sum(summand)))*(1/(1- holdR[1,3,sim-1]^2))
 
-R2 = holdR[,,sim-1]; R2[1,3] = R2[3,1] = holdR[1,3,sim-1]
+R2 = holdR[,,sim-1]; 
+if(any(eigen(R2)$values<0)) next;
 
 summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(1,3), c(1,3)] %*% R2[c(1,3), c(1,3)] %*% S[c(1,3), c(1,3)]) %*% (resid) )
 
@@ -162,11 +170,14 @@ y = rnorm(1, 0.5 * log((1+holdR[2,4,sim-1]) / (1- holdR[2,4,sim-1])), sd = sqrt(
 
 R2 = holdR[,,sim-1]; R2[2,4] = R2[4,2] = ifisherz(y)
 
+if(any(eigen(R2)$values<0)) next;
+
 summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(2,4), c(2,4)] %*% R2[c(2,4), c(2,4)] %*% S[c(2,4), c(2,4)]) %*% (resid) )
 
 ratio = exp(fdelt(n/2, R = R2, j = sum(summand)))*(1/(1- holdR[2,4,sim-1]^2))
 
-R2 = holdR[,,sim-1]; R2[2,4] = R2[4,2] = holdR[2,4,sim-1]
+R2 = holdR[,,sim-1]; R2[1,3] = R2[3,1] = r13
+if(any(eigen(R2)$values<0)) next;
 
 summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(2,4), c(2,4)] %*% R2[c(2,4), c(2,4)] %*% S[c(2,4), c(2,4)]) %*% (resid) )
 
@@ -197,6 +208,11 @@ R[1,4] = R[4,1] = c(m$T1S0)
 R[2,3] = R[3,2] = c(m$T0S1)
 R[3,4] = R[4,3] = c(m$T0T1)
 
+if(condindfit){
+  R[1,2] = R[2,1] = R[1,4]/R[2,4]
+  R[3,2] = R[2,3] = R[1,2] * R[1,3]
+}
+  
 if(any(eigen(R)$values<0)) next; if(any(abs(R)>1)) next
 
 
@@ -209,18 +225,27 @@ slope[sim] = (holdR[2,4,sim]*holdS[2,2,sim]*holdS[4,4,sim]-holdR[1,4,sim]*holdS[
 int[sim] =(holdmu[4,sim]-holdmu[3,sim]) -((holdR[2,4,sim]*holdS[2,2,sim]*holdS[4,4,sim]-holdR[1,4,sim]*holdS[1,1,sim]*holdS[4,4,sim]-holdR[2,3,sim]*holdS[2,2,sim]*holdS[3,3,sim]+
     holdR[1,3,sim]*holdS[1,1,sim]*holdS[3,3,sim])/(holdS[1,1,sim]^2+holdS[2,2,sim]^2-2*holdR[1,2,sim]*holdS[1,1,sim]*holdS[2,2,sim]))*(holdmu[2,sim]-holdmu[1,sim])
 
-if(sim %% 10 == 0) print(sim)
+if(sim %% 20 == 0) print(sim)
 
 sim = sim + 1
 
 } 
 
 params_matrix = data.frame(holdpsi1 = holdpsi1, holdpsi2 = holdpsi2, holdomega1 = holdomega1, holdomega2 = holdomega2,
-   holdalpha0 = holdalpha0, holdalpha01 = holdalpha01, holdbeta0 = holdbeta0, holdbeta01 = holdbeta01,
-   int = int, slope = slope,
-   r12 = holdR[1,2,], r13 = holdR[1,3,], r14 = holdR[1,4,],
-   r23 = holdR[2,3,], r24 = holdR[2,4,], r34 = holdR[3,4,],
-   s1 = holdS[1,1,], s2 = holdS[2,2,], s3 = holdS[3,3,], s4 = holdS[4,4,])
+                           holdalpha0 = holdalpha0, holdalpha01 = holdalpha01, holdbeta0 = holdbeta0, holdbeta01 = holdbeta01,
+                           int = int, slope = slope,
+                           r12 = holdR[1,2,], r13 = holdR[1,3,], r14 = holdR[1,4,],
+                           r23 = holdR[2,3,], r24 = holdR[2,4,], r34 = holdR[3,4,],
+                           s1 = holdS[1,1,], s2 = holdS[2,2,], s3 = holdS[3,3,], s4 = holdS[4,4,],
+                           holdpsi1SE = sd(holdpsi1, na.rm = T), holdpsi2SE = sd(holdpsi2, na.rm = T), holdomega1SE = sd(holdomega1, na.rm = T),
+                           holdomega2SE = sd(holdomega2, na.rm = T),
+                           holdalpha0SE = sd(holdalpha0, na.rm = T), holdalpha01SE = sd(holdalpha01, na.rm = T), holdbeta0SE = sd(holdbeta0, na.rm = T),
+                           holdbeta01SE = sd(holdbeta01, na.rm = T),
+                           intSE = sd(int, na.rm = T), slopeSE = sd(slope, na.rm = T),
+                           r12SE = sd(holdR[1,2,], na.rm = T), r13SE = sd(holdR[1,3,], na.rm = T), r14SE = sd(holdR[1,4,], na.rm = T),
+                           r23SE = sd(holdR[2,3,], na.rm = T), r24SE = sd(holdR[2,4,], na.rm = T), r34SE = sd(holdR[3,4,], na.rm = T),
+                           s1SE = sd(holdS[1,1,], na.rm = T), s2SE = sd(holdS[2,2,], na.rm = T), s3SE = sd(holdS[3,3,], na.rm = T), 
+                           s4SE = sd(holdS[4,4,], na.rm = T))
 
 params = list(holdS = holdS, holdR = holdR)
 
