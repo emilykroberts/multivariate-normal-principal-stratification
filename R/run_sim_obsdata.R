@@ -7,16 +7,32 @@
 #' @param X covariate
 #' @param trt treatment vector
 #' @param condindfit boolean for conditional independence
-
+#' @param grid interval of values for assessing valid covariance matrices
+#' @param min minimum value of correlations
+#' @param max maximum value of correlations
 #'
 #' @return simulation results
 #'
 #' @examples 
 #' example(run_sim(SIM = 1000, ST = STdat, X = X, n = 100))
-run_sim_obsdata = function(SIM, ST, X, trt, condindfit){
+run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
  
   if(missing(condindfit)){
     condindfit = F
+  }
+  
+     if(missing(min)){
+	min = -1
+  }
+  
+  
+    if(missing(max)){
+    max = 1
+  }
+  
+  
+  if(missing(grid)){
+    grid = 0.2
   }
   
 n = nrow(ST)
@@ -198,8 +214,8 @@ R[1,3] = R[3,1] = r13
 # non-identified correlations
 
 SurICA <- ICA.ContCont(T0S0=R[1,3], T1S1=R[2,4], T0T0=S[3,3]^2, T1T1=S[4,4]^2, S0S0=S[1,1]^2, S1S1=S[2,2]^2,
-                       T0T1=seq(0, 1, by=.2), T0S1=seq(0, 1, by=.2), T1S0=seq(0, 1, by=.2),
-                       S0S1=seq(0, 1, by=.2)) # may be able to put in the variance or correlations as a range and do this once
+                       T0T1=seq(min, max, by=grid), T0S1=seq(min, max, by= grid), T1S0=seq(min, max, by= grid),
+                       S0S1=seq(min, max, by= grid)) # may be able to put in the variance or correlations as a range and do this once
 
 matrices = SurICA$Pos.Def
 m = matrices[sample(nrow(matrices), 1), ]
