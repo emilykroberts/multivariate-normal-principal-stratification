@@ -13,8 +13,8 @@
 #'
 plot_traceplots = function(params, variable){
   param = params$params_matrix
-
+  
   plot(eval(parse(text = paste0("param$", variable))), ylab = "Parameter Draw",
        xlab = "MCMC Iteration", main = paste("Traceplot of Parameter", variable))
-
+  
 }

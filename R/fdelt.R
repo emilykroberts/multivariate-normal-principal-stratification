@@ -10,7 +10,7 @@
 #'
 #' @examples 
 #' example(fdelt(n = 100, R = matrix(diag(c(1,1,1))), j = 10))
-     
+
 fdelt = function(n, R, j){ 
-	return(-(n/2)*log(det(R))+(-0.5*j))
-	}
+  return( - (n / 2) * log(det(R)) + ( - 0.5 * j))
+}
