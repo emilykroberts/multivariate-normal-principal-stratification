@@ -96,7 +96,7 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
     betaS= c(rmvnorm(1, m, v / n))
     holdalpha0[sim] = betaS[1]
     holdpsi1[sim] = betaS[2]
-    tmp1 = (ST[trt==0, 1]) - Xmat[trt==0, ]%*%betaS
+    tmp1 = (ST[trt==0, 1]) - Xmat[trt==0, ] %*% betaS
     
     Lambda0t = diag(c(rep(0.1, 2))); tauST0 = holdS[2, 2, sim - 1] ^ 2
     v = ginv(Lambda0t + as.numeric(tauST0) * (t(Xmat[trt==1, ]) %*% Xmat[trt==1, ]))
