@@ -11,8 +11,8 @@
 #' @return final results
 #'
 #' @examples
-#' example(final_results(params_matrix = params, holdR = holdR, holdS = holdS, res = results, write = F))
-
+#' example(final_results(params_matrix = params, holdR = holdR, holdS = holdS,
+#' res = results, write = F))
 #'
 final_results = function(params_matrix, write, holdR, holdS, res){
   ## save results

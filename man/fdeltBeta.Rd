@@ -20,5 +20,5 @@ proportional likelihood
 likelihood for correlation parameter with a Beta prior
 }
 \examples{
-example(fdeltBeta(n = 100, R = matrix(diag(c(1,1,1))), j = 10))
+example(fdeltBeta(n = 100, R = matrix(diag(c(1, 1, 1))), j = 10))
 }

@@ -20,6 +20,8 @@ generatedata(n, mu, psi2, psi1, omega1, omega2, sig, R)
 \item{omega2}{coefficient for X for T(1)}
 
 \item{sig}{variance parameter}
+
+\item{R}{correlation matrix}
 }
 \value{
 dataset

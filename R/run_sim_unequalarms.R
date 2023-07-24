@@ -5,7 +5,7 @@
 #' @param SIM number of iterations of mcmc to run
 #' @param ST dataset
 #' @param X covariate
-#' @param n sample size
+#' @param trt treatment allocation
 #'
 #' @return simulation results
 #'
