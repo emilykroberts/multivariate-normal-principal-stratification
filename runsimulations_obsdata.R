@@ -1,5 +1,5 @@
 library(corpcor)
-library(bayesSurv)
+#library(bayesSurv)
 library(MASS)
 library(coda)
 library(mvtnorm)
@@ -25,13 +25,13 @@ SIM = 100
 
 mu = c(2, 3.4, 4, 5)
 sig = 0.5
-psi2= 0; psi1 = 0; omega1 = 0; omega2 = 0 #main effects of x
+psi2 = 0; psi1 = 0; omega1 = 0; omega2 = 0 #main effects of x
 
 set.seed(323)
 ST = generatedata(n = n, mu = mu, psi2 = psi2, psi1 = psi1, omega1 = omega1, omega2 = omega2, sig = sig)
-X = ST[,5]
+X = ST[, 5]
 
-res = run_sim_obsdata(SIM = SIM, ST = ST, X = X, trt = c(rep(0, n/2), rep(1, n/2)))
+res = run_sim_obsdata(SIM = SIM, ST = ST, X = X, trt = c(rep(0, n / 2), rep(1, n / 2)))
 
 params_matrix = res$params_matrix
 
@@ -45,7 +45,6 @@ plot_traceplots(params = res, variable = "holdalpha0")
 plot_traceplots(params = res, variable = "holdalpha01")
 plot_traceplots(params = res, variable = "holdbeta0")
 plot_traceplots(params = res, variable = "holdbeta01")
-
 
 final_results(params_matrix = params_matrix, write = F, holdR = res$params$holdR,
   holdS = res$params$holdS, res = res)
