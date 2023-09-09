@@ -214,7 +214,7 @@ run_sim = function(SIM, ST, X, n){
         
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
         
-        fr12[(k - low12 + 1), 2] = fdelt(n = n, R = Rho, j = sum(summand))
+        fr12[(k - low12 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
       }
       
       fr12 = matrix(fr12, ncol = 4)
@@ -248,7 +248,7 @@ run_sim = function(SIM, ST, X, n){
         
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
         
-        fr12[(k - low12 + 1), 2] = fdelt(n = n, R = Rho, j = sum(summand))
+        fr12[(k - low12 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
       }
       fr12 = matrix(fr12, ncol = 4)
       
@@ -322,8 +322,8 @@ run_sim = function(SIM, ST, X, n){
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
         #summand = apply(resid[trt == 0, ], 1, function(resid) t(resid) %*% ginv(S %*% Rho %*% S) %*% resid)
         
-        fr13[(k - low13 + 1), 2] = fdelt(n = n, R = Rho, j = sum(summand))
-        #fr13[(k - low13 + 1), 2] = fdelt(n = n / 2, R = Rho, j = sum(summand))
+        fr13[(k - low13 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
+        #fr13[(k - low13 + 1), 2] = uniform_prior(n = n / 2, R = Rho, j = sum(summand))
         
       }
       
@@ -356,7 +356,7 @@ run_sim = function(SIM, ST, X, n){
         fr13[(k - low13 + 1), 1] = r
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
         
-        fr13[(k - low13 + 1), 2] = fdelt(n = n, R = Rho, j = sum(summand))
+        fr13[(k - low13 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
       }
       
       #plot(fr13[, 1], fr13[, 2])
@@ -413,7 +413,7 @@ run_sim = function(SIM, ST, X, n){
         fr24[(k - low24 + 1), 1] = r
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
         
-        fr24[(k - low24 + 1), 2] = fdelt(n = n, R = Rho, j = sum(summand))
+        fr24[(k - low24 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
       }
       fr24 = matrix(fr24, ncol = 4)
       
@@ -448,7 +448,7 @@ run_sim = function(SIM, ST, X, n){
         fr24[(k - low24 + 1), 1] = r
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
         
-        fr24[(k - low24 + 1), 2] = fdelt(n = n, R = Rho, j = sum(summand))
+        fr24[(k - low24 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
       }
       fr24 = matrix(fr24, ncol = 4)
       fr24 = fr24[!is.na(fr24[, 2]), ] 
@@ -513,7 +513,7 @@ run_sim = function(SIM, ST, X, n){
         fr14[(k - low14 + 1), 1] = r
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
         
-        fr14[(k - low14 + 1), 2] = fdelt(n = n, R = Rho, j = sum(summand))
+        fr14[(k - low14 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
       }
       fr14 = matrix(fr14, ncol = 4)
       fr14 = fr14[!is.na(fr14[, 2]), ] 
@@ -549,7 +549,7 @@ run_sim = function(SIM, ST, X, n){
         
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
         
-        fr14[(k - low14 + 1), 2] = fdelt(n = n, R = Rho, j = sum(summand))
+        fr14[(k - low14 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
       }
       fr14 = matrix(fr14, ncol = 4)
       fr14 = fr14[!is.na(fr14[, 2]), ] 
@@ -618,7 +618,7 @@ run_sim = function(SIM, ST, X, n){
         
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
         
-        fr23[(k - low23 + 1), 2] = fdelt(n = n, R = Rho, j = sum(summand))
+        fr23[(k - low23 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
       }
       
       fr23 = matrix(fr23, ncol = 4)
@@ -660,7 +660,7 @@ run_sim = function(SIM, ST, X, n){
         
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
         
-        fr23[(k - low23 + 1), 2] = fdelt(n = n, R = Rho, j = sum(summand))
+        fr23[(k - low23 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
       }
       fr23 = matrix(fr23, ncol = 4)
       
@@ -734,7 +734,7 @@ run_sim = function(SIM, ST, X, n){
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
         
         
-        fr34[(k - low34 + 1), 2] = fdelt(n, Rho, j = sum(summand))
+        fr34[(k - low34 + 1), 2] = uniform_prior(n, Rho, j = sum(summand))
       }
       
       fr34 = fr34[!is.na(fr34[, 2]), ] 
@@ -763,7 +763,7 @@ run_sim = function(SIM, ST, X, n){
           
           summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
           
-          fr34[(k - low34 + 1), 2] = fdelt(n = n, R = Rho, j = sum(summand))
+          fr34[(k - low34 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
         }
         
         fr34 = fr34[!is.na(fr34[, 2]), ] 
