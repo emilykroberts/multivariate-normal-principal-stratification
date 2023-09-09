@@ -237,7 +237,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
       fr12 = matrix(fr12, ncol = 4)
       
       m = which(fr12[, 2] == max(fr12[, 2]))[1]
-      x1 = max(1, (m - 10)) #why 10?
+      x1 = max(1, (m - 10))
       x2 = min(length(fr12[, 1]), (m + 10))
       low12 = 500 * fr12[x1, 1]
       up12 = 500 * fr12[x2, 1]

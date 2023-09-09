@@ -4,7 +4,7 @@
 \alias{run_sim}
 \title{run the simulation}
 \usage{
-run_sim(SIM, ST, X, n)
+run_sim(SIM, ST, X, n, condindfit)
 }
 \arguments{
 \item{SIM}{number of iterations of mcmc to run}
@@ -14,6 +14,8 @@ run_sim(SIM, ST, X, n)
 \item{X}{covariate}
 
 \item{n}{sample size}
+
+\item{condindfit}{fit using conditional independence assumption}
 }
 \value{
 simulation results
