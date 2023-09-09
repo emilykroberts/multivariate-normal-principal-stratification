@@ -4,7 +4,7 @@
 \alias{run_sim}
 \title{run the simulation}
 \usage{
-run_sim(SIM, ST, X, n, condindfit)
+run_sim(SIM, ST, X, n, condindfit, trt)
 }
 \arguments{
 \item{SIM}{number of iterations of mcmc to run}
@@ -16,6 +16,8 @@ run_sim(SIM, ST, X, n, condindfit)
 \item{n}{sample size}
 
 \item{condindfit}{fit using conditional independence assumption}
+
+\item{trt}{treatment allocation vector}
 }
 \value{
 simulation results
