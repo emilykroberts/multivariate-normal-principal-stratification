@@ -14,7 +14,6 @@ devtools::install_github("emilykroberts/multivariate-normal-principal-stratifica
 library(mvnPS)
 ```
 
-
 in development
 
 ### Resources
@@ -34,7 +33,7 @@ The main functions in this repository are written to simulate data and run analy
 First, data in the illness death format for a randomized trial can be generated using the generatedata.R file. This will provide a datasets that follows the models for each treatment arm described in the manuscripts. 
 The following files contain the likelihood components or calculations for different parameters in the proposed models based on the Bayesian framework:
 
-fdelt.R for the posterior computation of correlation parameters assuming a Uniform distribution, and fdeltaBeta.R for the posterior computation assuming a Beta prior.
+fdelt.R for the posterior computation of correlation parameters assuming a Uniform distribution, and fdeltBeta.R for the posterior computation assuming a Beta prior.
 
 The run_sim.R function runs the simulations/MCMC and performs estimation and surrogacy validation based on our proposed methods.
 
@@ -42,11 +41,15 @@ Based on the estimation in run_sim.R, the draws of parameters from the MCMC and 
       
 plot_traceplots.R is a diagnostic tool to examine the traceplots of the parameter draws as desired by the user.
 
-runsimulations_obsdata.R is a file to set up parameter values and generate the simulation results found in the main paper. Once this file is run, .txt files are created with the results (one file per dataset over iterations of the MCMC). These results can be read in using code to create a table suitable for LaTeX or for output to a .csv file. The simulations in the manuscript are run in parallel on a high performance computer cluster. A slurm file is provided to run many iterations in parallel, though a single simulation can be run by setting the array_id variable to a fixed number and changing the number of MCMC iterations (SIM).
+runsimulations_obsdata.R is a file to set up parameter values and generate the simulation results found in the main paper. Once this file is run, .txt files are created with the results (one file per dataset over iterations of the MCMC). These results can be read in using code to create a table suitable for LaTeX or for output to a .csv file. The simulations in the manuscript are run in parallel on a high performance computer cluster. It is possible to run many iterations in parallel, though a single simulation can be run by setting the array_id variable to a fixed number and changing the number of MCMC iterations (SIM).
+
+-----------------------------------------------------------------------------------------------------
+Other information
+-----------------------------------------------------------------------------------------------------
 
 ### Contributing 
 
-If you are interested in contributing to the development please open an issue to request.
+If you are interested in contributing to the development please open an issue to request or contact at emily-roberts-1@uiowa.edu.
 
 ### References and other literature
 
