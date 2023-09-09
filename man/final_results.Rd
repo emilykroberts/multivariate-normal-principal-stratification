@@ -4,7 +4,7 @@
 \alias{final_results}
 \title{results}
 \usage{
-final_results(params_matrix, write, holdR, holdS, res)
+final_results(params_matrix, write, holdR, holdS, res, array_id)
 }
 \arguments{
 \item{params_matrix}{results from mcmc}
@@ -16,6 +16,8 @@ final_results(params_matrix, write, holdR, holdS, res)
 \item{holdS}{holdS variances}
 
 \item{res}{results}
+
+\item{array_id}{identifier related to random seed for simulation replication}
 }
 \value{
 final results

@@ -7,6 +7,7 @@
 #' @param holdR holdR correlations
 #' @param holdS holdS variances
 #' @param write boolean of writing results to csv
+#' @param array_id identifier related to random seed for simulation replication
 #'
 #' @return final results
 #'
@@ -14,7 +15,7 @@
 #' example(final_results(params_matrix = params, holdR = holdR, holdS = holdS,
 #' res = results, write = F))
 #'
-final_results = function(params_matrix, write, holdR, holdS, res){
+final_results = function(params_matrix, write, holdR, holdS, res, array_id){
   ## save results
   param = params_matrix
   

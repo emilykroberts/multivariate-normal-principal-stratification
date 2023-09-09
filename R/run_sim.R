@@ -1,5 +1,7 @@
 #' run the simulation
 #'
+#' importFrom("stats", "coef", "complete.cases", "cor", "lm", "median",#'               "na.fail", "na.omit", "quantile", "runif", "sd", "var", "utils", "write.table")
+#'
 #' @description run mcmc simulation
 #'
 #' @param SIM number of iterations of mcmc to run

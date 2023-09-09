@@ -25,6 +25,10 @@ simulation results
 \description{
 run mcmc simulation
 }
+\details{
+importFrom("stats", "coef", "complete.cases", "cor", "lm", "median",
+              "na.fail", "na.omit", "quantile", "runif", "sd", "var", "utils", "write.table")
+}
 \examples{
 example(run_sim(SIM = 1000, ST = STdat, X = X, n = 100))
 }
