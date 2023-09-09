@@ -39,7 +39,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
     
     holdpsi1 = (rep(0, 1 * SIM));holdpsi2 = (rep(0, 1 * SIM))
     holdomega1 = (rep(0, 1 * SIM)); holdomega2 = (rep(0, 1 * SIM))
-    holdalpha0 = (rep(0, 1 * SIM));holdalpha01 = (rep(0, 1 * SIM))
+    holdalpha0 = (rep(0, 1 * SIM)); holdalpha01 = (rep(0, 1 * SIM))
     holdbeta0 = (rep(0, 1 * SIM)); holdbeta01 = (rep(0, 1 * SIM))
     
     slope = array(0, c((SIM), 1))
@@ -82,10 +82,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
     
     for(i in 1:n){
       
-      
       if(trt[i] == 0){
-        
-        #(SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)])) %*% (ST[i, c(1, 3)]))
         
         ST[i, c(2, 4)] = c(mu[i, c(2, 4)] + (SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)])) %*% (as.matrix(t(ST[i, c(1, 3)] - mu[i, c(1, 3)])))) + 
           mvrnorm(1, c(0, 0), SIG[c(2, 4), c(2, 4)] - SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)]) %*% SIG[c(1, 3), c(2, 4)])
@@ -96,21 +93,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
           mvrnorm(1, c(0, 0), SIG[c(1, 3), c(1, 3)] - SIG[c(1, 3), c(2, 4)] %*% ginv(SIG[c(2, 4), c(2, 4)]) %*% SIG[c(2, 4), c(1, 3)])
       }
       
-      # if(trt[i] == 0){
-      # 
-      # #(SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)])) %*% (ST[i, c(1, 3)]))
-      # 
-      # ST[i, c(2, 4)] = c(mu[i, c(2, 4)] + (SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)])) %*% t(as.matrix(t(ST[i, c(1, 3)] - mu[i, c(1, 3)])))) + 
-      # mvrnorm(1, c(0, 0), SIG[c(2, 4), c(2, 4)] - SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)]) %*% SIG[c(1, 3), c(2, 4)])
-      # }
-      # 
-      # if(trt[i] == 1){
-      # ST[i, c(1, 3)] = c(mu[i, c(1, 3)] + (SIG[c(1, 3), c(2, 4)] %*% ginv(SIG[c(2, 4), c(2, 4)])) %*% t(as.matrix(t(ST[i, c(2, 4)] - mu[i, c(2, 4)])))) + 
-      # mvrnorm(1, c(0, 0), SIG[c(1, 3), c(1, 3)] - SIG[c(1, 3), c(2, 4)] %*% ginv(SIG[c(2, 4), c(2, 4)]) %*% SIG[c(2, 4), c(1, 3)])
-      # }
-      
     }
-    
     
     #estimate coefficients #Estimate S0 model
     Xmat = XmatS = cbind(rep(1, n), X)
@@ -153,9 +136,6 @@ run_sim = function(SIM, ST, X, n, condindfit){
     #update entire sigma
     tmp = rbind(t(tmp1), t(tmp2), t(tmp3), t(tmp4))
     
-    #cor(tmp1[trt == 0], tmp3[trt == 0])
-    #cor(tmp1[trt == 1], tmp3[trt == 1])
-    
     mu = cbind(rep(holdalpha0[sim], n) + holdpsi1[sim] * X, 
                rep(holdalpha01[sim], n) + holdpsi2[sim] * X, 
                rep(holdbeta0[sim]) + holdomega1[sim] * X, 
@@ -175,12 +155,11 @@ run_sim = function(SIM, ST, X, n, condindfit){
     s2 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp2 ^ 2) / 2  +  b))
     s3 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp3 ^ 2) / 2  +  b))
     s4 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp4 ^ 2) / 2  +  b))
-    
-    
-    s1 = sd(tmp1)
-    s2 = sd(tmp2)
-    s3 = sd(tmp3)
-    s4 = sd(tmp4)
+    # 
+    # s1 = sd(tmp1)
+    # s2 = sd(tmp2)
+    # s3 = sd(tmp3)
+    # s4 = sd(tmp4)
     
     S[1, 1] = s1
     S[2, 2] = s2
@@ -189,11 +168,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
     
     #print(S)
     
-    #if(any(S>1)) break
-    
-    #print(S)
     if(holdSmatrix) S = holdS[, , 1]
-    
     
     if(!holdRmatrix){
       ##r12
@@ -201,8 +176,8 @@ run_sim = function(SIM, ST, X, n, condindfit){
       b12 = 2 * R[1, 4] * R[2, 4] - 2 * R[1, 3] * R[2, 4] * R[3, 4] - 2 * R[1, 4] * R[2, 3] * R[3, 4] + 2 * R[1, 3] * R[2, 3]
       c12 = 1 - R[3, 4] ^ 2 - R[2, 3] ^ 2 - R[2, 4] ^ 2 - R[1, 3] ^ 2 - R[1, 4] ^ 2 + R[1, 3] ^ 2 * R[2, 4] ^ 2 + R[1, 4] ^ 2 * R[2, 3] ^ 2 + 2 * R[2, 3] * R[2, 4] * R[3, 4] - 2 * R[1, 3] * R[1, 4] * R[2, 3] * R[2, 4] + 2 * R[1, 3] * R[1, 4] * R[3, 4]
       
-      L12 = ( - b12 + sqrt((b12 ^ 2) - 4 * a12 * c12)) / (2 * a12)
-      U12 = ( - b12 - sqrt((b12 ^ 2) - 4 * a12 * c12)) / (2 * a12)
+      L12 = (- b12 + sqrt((b12 ^ 2) - 4 * a12 * c12)) / (2 * a12)
+      U12 = (- b12 - sqrt((b12 ^ 2) - 4 * a12 * c12)) / (2 * a12)
       
       low12 = ceiling(100 * max(0, min(L12, U12)))
       up12 = floor(100 * max(min(1, L12), min(1, U12)))
@@ -303,8 +278,8 @@ run_sim = function(SIM, ST, X, n, condindfit){
       b13 = 2 * R[1, 2] * R[2, 3] + 2 * R[1, 4] * R[3, 4] - 2 * R[1, 2] * R[2, 4] * R[3, 4] - 2 * R[1, 4] * R[2, 3] * R[2, 4]
       c13 = 1 - R[3, 4] ^ 2 - R[2, 3] ^ 2 - R[2, 4] ^ 2 - R[1, 2] ^ 2 - R[1, 4] ^ 2 + R[1, 2] ^ 2 * R[3, 4] ^ 2 + R[1, 4] ^ 2 * R[2, 3] ^ 2 + 2 * R[2, 3] * R[2, 4] * R[3, 4] + 2 * R[1, 2] * R[1, 4] * R[2, 4] - 2 * R[1, 2] * R[2, 3] * R[3, 4] * R[1, 4]
       
-      L13 = ( - b13 + sqrt((b13 ^ 2) - 4 * a13 * c13)) / (2 * a13)
-      U13 = ( - b13 - sqrt((b13 ^ 2) - 4 * a13 * c13)) / (2 * a13)
+      L13 = (- b13 + sqrt((b13 ^ 2) - 4 * a13 * c13)) / (2 * a13)
+      U13 = (- b13 - sqrt((b13 ^ 2) - 4 * a13 * c13)) / (2 * a13)
       
       a13 = - R[3, 4] * R[2, 4] * R[1, 4] - R[2, 4] ^ 2 * R[2, 3] * R[2, 4] ^ 2 * R[1, 4] - R[2, 4] * R[1, 2] + R[1, 2] * R[3, 4]
       b13 = - R[2, 4] * R[1, 4] * R[2, 3] * R[1, 2] * R[3, 4] - R[2, 4] ^ 2 * R[1, 4] * R[1, 2] - R[3, 4] * R[2, 4] ^ 2 * R[2, 3] + 
@@ -325,14 +300,9 @@ run_sim = function(SIM, ST, X, n, condindfit){
         fr13[(k - low13 + 1), 1] = r
         
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
-        #summand = apply(resid[trt == 0, ], 1, function(resid) t(resid) %*% ginv(S %*% Rho %*% S) %*% resid)
-        
+
         fr13[(k - low13 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
-        #fr13[(k - low13 + 1), 2] = uniform_prior(n = n / 2, R = Rho, j = sum(summand))
-        
       }
-      
-      #plot(fr13[, 1], fr13[, 2])
       
       fr13 = fr13[!is.na(fr13[, 2]), ]
       fr13 = fr13[!is.infinite(fr13[, 2]), ] 
@@ -402,8 +372,8 @@ run_sim = function(SIM, ST, X, n, condindfit){
       a24 = (R[1, 3] ^ 2 - 1)
       b24 = 2 * R[2, 3] * R[3, 4] + 2 * R[1, 2] * R[1, 4] - 2 * R[1, 2] * R[1, 3] * R[3, 4] - 2 * R[1, 3] * R[1, 4] * R[2, 3]
       c24 = 1 - R[3, 4] ^ 2 - R[2, 3] ^ 2 - R[1, 2] ^ 2 - R[1, 3] ^ 2 - R[1, 4] ^ 2 + R[1, 2] ^ 2 * R[3, 4] ^ 2 + R[1, 4] ^ 2 * R[2, 3] ^ 2 + 2 * R[1, 2] * R[1, 3] * R[2, 3] + 2 * R[1, 3] * R[1, 4] * R[3, 4] - 2 * R[1, 2] * R[2, 3] * R[3, 4] * R[1, 4]
-      L24 = ( - b24 + sqrt((b24 ^ 2) - 4 * a24 * c24)) / (2 * a24)
-      U24 = ( - b24 - sqrt((b24 ^ 2) - 4 * a24 * c24)) / (2 * a24)
+      L24 = (- b24 + sqrt((b24 ^ 2) - 4 * a24 * c24)) / (2 * a24)
+      U24 = (- b24 - sqrt((b24 ^ 2) - 4 * a24 * c24)) / (2 * a24)
       
       #low24 = ceiling(100 * max(0, R[2, 3], R[1, 4], min(L24, U24)))
       low24 = ceiling(100 * max(0, min(L24, U24)))
@@ -499,8 +469,8 @@ run_sim = function(SIM, ST, X, n, condindfit){
       b14 = 2 * R[1, 2] * R[2, 4] + 2 * R[1, 3] * R[3, 4] - 2 * R[1, 2] * R[2, 3] * R[3, 4] - 2 * R[1, 3] * R[2, 3] * R[2, 4]
       c14 = 1 - R[1, 2] ^ 2 - R[1, 3] ^ 2 - R[2, 3] ^ 2 - R[2, 4] ^ 2 - R[3, 4] ^ 2 + R[1, 2] ^ 2 * R[3, 4] ^ 2 + R[1, 3] ^ 2 * R[2, 4] ^ 2 + 2 * R[2, 3] * R[2, 4] * R[3, 4] + 2 * R[1, 2] * R[1, 3] * R[2, 3] - 2 * R[1, 2] * R[1, 3] * R[2, 4] * R[3, 4]
       
-      L14 = ( - b14 + sqrt((b14 ^ 2) - 4 * a14 * c14)) / (2 * a14)
-      U14 = ( - b14 - sqrt((b14 ^ 2) - 4 * a14 * c14)) / (2 * a14)
+      L14 = (- b14 + sqrt((b14 ^ 2) - 4 * a14 * c14)) / (2 * a14)
+      U14 = (- b14 - sqrt((b14 ^ 2) - 4 * a14 * c14)) / (2 * a14)
       L14[is.na(L14)] = - 1
       U14[is.na(U14)] = 1
       
@@ -602,8 +572,8 @@ run_sim = function(SIM, ST, X, n, condindfit){
       b23 = 2 * R[2, 4] * R[3, 4] + 2 * R[1, 2] * R[1, 3] - 2 * R[1, 2] * R[3, 4] * R[1, 4] - 2 * R[1, 3] * R[1, 4] * R[2, 4]
       c23 = 1 - R[3, 4] ^ 2 - R[2, 4] ^ 2 - R[1, 2] ^ 2 - R[1, 3] ^ 2 - R[1, 4] ^ 2 + R[1, 2] ^ 2 * R[3, 4] ^ 2 + R[1, 3] ^ 2 * R[2, 4] ^ 2 + 2 * R[1, 2] * R[1, 4] * R[2, 4] + 2 * R[1, 3] * R[1, 4] * R[3, 4] - 2 * R[1, 2] * R[1, 3] * R[2, 4] * R[3, 4]
       
-      L23 = ( - b23 + sqrt((b23 ^ 2) - 4 * a23 * c23)) / (2 * a23)
-      U23 = ( - b23 - sqrt((b23 ^ 2) - 4 * a23 * c23)) / (2 * a23)
+      L23 = (- b23 + sqrt((b23 ^ 2) - 4 * a23 * c23)) / (2 * a23)
+      U23 = (- b23 - sqrt((b23 ^ 2) - 4 * a23 * c23)) / (2 * a23)
       
       low23 = ceiling(100 * max(0, min(L23, U23)))
       #up23 = floor(100 * min(R[1, 2], R[1, 3], R[2, 4], R[3, 4], max(L23, U23)))
@@ -720,8 +690,8 @@ run_sim = function(SIM, ST, X, n, condindfit){
       b34 = 2 * R[2, 3] * R[2, 4] + 2 * R[1, 3] * R[1, 4] - 2 * R[1, 2] * R[1, 4] * R[2, 3] - 2 * R[1, 2] * R[1, 3] * R[2, 4]
       c34 = 1 - R[1, 2] ^ 2 - R[1, 3] ^ 2 - R[1, 4] ^ 2 - R[2, 3] ^ 2 - R[2, 4] ^ 2 + R[1, 3] ^ 2 * R[2, 4] ^ 2 + R[2, 3] ^ 2 * R[1, 4] ^ 2 + 2 * R[1, 2] * R[1, 3] * R[2, 3] + 2 * R[1, 4] * R[1, 2] * R[2, 4] - 2 * R[1, 3] * R[2, 4] * R[1, 4] * R[2, 3]
       
-      L34 = ( - b34 + sqrt((b34 ^ 2) - 4 * a34 * c34)) / (2 * a34)
-      U34 = ( - b34 - sqrt((b34 ^ 2) - 4 * a34 * c34)) / (2 * a34)
+      L34 = (- b34 + sqrt((b34 ^ 2) - 4 * a34 * c34)) / (2 * a34)
+      U34 = (- b34 - sqrt((b34 ^ 2) - 4 * a34 * c34)) / (2 * a34)
       
       low34 = ceiling(100 * max(0, min(L34, U34)))
       up34 = floor(100 * max(min(1, L34), min(1, U34)))
@@ -856,8 +826,6 @@ run_sim = function(SIM, ST, X, n, condindfit){
   result = list(params = params, params_matrix = params_matrix, 
                 args = list(SIM = SIM, burnin = burnin, n = n))
   
-  
   return(result)
-  
   
 }
