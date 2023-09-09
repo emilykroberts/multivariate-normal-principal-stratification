@@ -30,7 +30,7 @@ set.seed(323)
 ST = generatedata(n = n, mu = mu, psi2 = psi2, psi1 = psi1, omega1 = omega1, omega2 = omega2, sig = sig)
 X = ST[, 5]
 
-res = run_sim(SIM = SIM, ST = ST, X = X, trt = c(rep(0, n / 2), rep(1, n / 2)))
+res = run_sim(SIM = SIM, ST = ST, n = n, X = X, trt = c(rep(0, n / 2), rep(1, n / 2)))
 
 params_matrix = res$params_matrix
 

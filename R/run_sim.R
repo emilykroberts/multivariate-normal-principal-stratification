@@ -7,19 +7,20 @@
 #' @param X covariate
 #' @param n sample size
 #' @param condindfit fit using conditional independence assumption
+#' @param trt treatment allocation vector
 #'
 #' @return simulation results
 #'
 #' @examples 
 #' example(run_sim(SIM = 1000, ST = STdat, X = X, n = 100))
-run_sim = function(SIM, ST, X, n, condindfit){
+run_sim = function(SIM, ST, X, n, condindfit, trt){
   
   if(missing(condindfit)){
     condindfit = F
   }
   
   burnin = 0.3 * SIM
-  trt = c(rep(0, n / 2), rep(1, n / 2))
+  # trt = c(rep(0, n / 2), rep(1, n / 2))
   
   {holdmu = matrix(rep(0, 4 * SIM), 4, SIM)
     holdmu1 = matrix(rep(0, 4 * SIM), 4, SIM)
@@ -84,12 +85,12 @@ run_sim = function(SIM, ST, X, n, condindfit){
       
       if(trt[i] == 0){
         
-        ST[i, c(2, 4)] = c(mu[i, c(2, 4)] + (SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)])) %*% (as.matrix(t(ST[i, c(1, 3)] - mu[i, c(1, 3)])))) + 
+        ST[i, c(2, 4)] = c(mu[i, c(2, 4)] + (SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)])) %*% t(as.matrix(t(ST[i, c(1, 3)] - mu[i, c(1, 3)])))) + 
           mvrnorm(1, c(0, 0), SIG[c(2, 4), c(2, 4)] - SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)]) %*% SIG[c(1, 3), c(2, 4)])
       }
       
       if(trt[i] == 1){
-        ST[i, c(1, 3)] = c(mu[i, c(1, 3)] + (SIG[c(1, 3), c(2, 4)] %*% ginv(SIG[c(2, 4), c(2, 4)])) %*% (as.matrix(t(ST[i, c(2, 4)] - mu[i, c(2, 4)])))) + 
+        ST[i, c(1, 3)] = c(mu[i, c(1, 3)] + (SIG[c(1, 3), c(2, 4)] %*% ginv(SIG[c(2, 4), c(2, 4)])) %*% t(as.matrix(t(ST[i, c(2, 4)] - mu[i, c(2, 4)])))) + 
           mvrnorm(1, c(0, 0), SIG[c(1, 3), c(1, 3)] - SIG[c(1, 3), c(2, 4)] %*% ginv(SIG[c(2, 4), c(2, 4)]) %*% SIG[c(2, 4), c(1, 3)])
       }
       
@@ -146,15 +147,15 @@ run_sim = function(SIM, ST, X, n, condindfit){
     var(resid)
     
     a = b = 0.1
-    s1 = rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp1 ^ 2) / 2  +  b))
-    s2 = rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp2 ^ 2) / 2  +  b))
-    s3 = rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp3 ^ 2) / 2  +  b))
-    s4 = rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp4 ^ 2) / 2  +  b))
+    s1 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp1 ^ 2) / 2  +  b))
+    s2 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp2 ^ 2) / 2  +  b))
+    s3 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp3 ^ 2) / 2  +  b))
+    s4 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp4 ^ 2) / 2  +  b))
     
-    s1 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp1 ^ 2) / 2  +  b))
-    s2 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp2 ^ 2) / 2  +  b))
-    s3 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp3 ^ 2) / 2  +  b))
-    s4 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp4 ^ 2) / 2  +  b))
+    # s1 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp1 ^ 2) / 2  +  b))
+    # s2 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp2 ^ 2) / 2  +  b))
+    # s3 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp3 ^ 2) / 2  +  b))
+    # s4 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp4 ^ 2) / 2  +  b))
     
     # s1 = sd(tmp1)
     # s2 = sd(tmp2)
