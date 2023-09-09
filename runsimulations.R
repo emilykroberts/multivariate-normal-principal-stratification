@@ -46,4 +46,4 @@ plot_traceplots(params = res, variable = "holdbeta0")
 plot_traceplots(params = res, variable = "holdbeta01")
 
 final_results(params_matrix = params_matrix, write = F, holdR = res$params$holdR,
-  holdS = res$params$holdS, res = res)
+  holdS = res$params$holdS, res = res, array_id = array_id)
