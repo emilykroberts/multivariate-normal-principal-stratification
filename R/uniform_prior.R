@@ -1,4 +1,4 @@
-#' fdelt
+#' uniform_prior
 #'
 #' @description likelihood for correlation parameter with a uniform prior
 #'
@@ -9,8 +9,8 @@
 #' @return proportional likelihood
 #'
 #' @examples 
-#' example(fdelt(n = 100, R = matrix(diag(c(1,1,1))), j = 10))
+#' example(uniform_prior(n = 100, R = matrix(diag(c(1,1,1))), j = 10))
 
-fdelt = function(n, R, j){ 
+uniform_prior = function(n, R, j){ 
   return( - (n / 2) * log(det(R)) + ( - 0.5 * j))
 }

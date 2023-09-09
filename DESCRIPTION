@@ -9,7 +9,7 @@ Description: Run surrogacy validation for normally distributed surrogate and tru
 License: GPL (>= 2)
 Depends: R (>= 3.5.0)
 Imports: corpcor, bayesSurv, MASS, coda, mvtnorm, MCMCpack
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Encoding: UTF-8
 URL: https://github.com/name/multivariate-normal-principal-stratification
 BugReports: https://github.com/name/multivariate-normal-principal-stratification/issues

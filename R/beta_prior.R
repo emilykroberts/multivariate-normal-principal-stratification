@@ -1,4 +1,4 @@
-#' fdeltBeta
+#' beta_prior
 #'
 #' @description likelihood for correlation parameter with a Beta prior
 #'
@@ -9,9 +9,9 @@
 #' @return proportional likelihood
 #'
 #' @examples 
-#' example(fdeltBeta(n = 100, R = matrix(diag(c(1, 1, 1))), j = 10))
+#' example(beta_prior(n = 100, R = matrix(diag(c(1, 1, 1))), j = 10))
 
-fdeltBeta = function(n, R, j){
+beta_prior = function(n, R, j){
   p = 2.7; q = 6 # want p>q
   a = -0.4 # lower bound of beta
   b = 1 # upper bound of beta
