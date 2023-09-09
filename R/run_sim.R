@@ -51,8 +51,8 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     tauSS0 = tauSS1 = tauST0 = tauST1 = c(1)
     
     #prelim values
-    R[1, 2] = 0.3; R[1, 3] = 0.7; R[1, 4] = 0.15; R[2, 3] = 0.15
-    R[2, 4] = 0.7; R[3, 4] = 0.3
+    #R[1, 2] = 0.3; R[1, 3] = 0.7; R[1, 4] = 0.15; R[2, 3] = 0.15
+    #R[2, 4] = 0.7; R[3, 4] = 0.3
     holdR[, , 1] = R
     
     for(i in 2:4){ for(j in 1:(i - 1)){ R[i, j] = R[j, i]}}
