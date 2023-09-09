@@ -8,7 +8,7 @@ library(HardyWeinberg)
 library(extraDistr)
 library(here)
 
-#setwd("./R")
+setwd("./R")
 
 # keep source files in a folder called R directory
 for(i in 1:(length(list.files(pattern = "\\.R$")))){
