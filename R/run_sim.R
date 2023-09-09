@@ -95,7 +95,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
       
     }
     
-    #estimate coefficients #Estimate S0 model
+    #estimate coefficients
     Xmat = XmatS = cbind(rep(1, n), X)
     
     v = ginv(SIG0Smat + as.numeric(tauSS0) * (t(XmatS) %*% XmatS))
@@ -155,7 +155,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
     s2 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp2 ^ 2) / 2  +  b))
     s3 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp3 ^ 2) / 2  +  b))
     s4 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp4 ^ 2) / 2  +  b))
-    # 
+    
     # s1 = sd(tmp1)
     # s2 = sd(tmp2)
     # s3 = sd(tmp3)
@@ -273,7 +273,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
       R[2, 1] = r12
       
       
-      ###r13
+      #r13
       a13 = (R[2, 4] ^ 2 - 1)
       b13 = 2 * R[1, 2] * R[2, 3] + 2 * R[1, 4] * R[3, 4] - 2 * R[1, 2] * R[2, 4] * R[3, 4] - 2 * R[1, 4] * R[2, 3] * R[2, 4]
       c13 = 1 - R[3, 4] ^ 2 - R[2, 3] ^ 2 - R[2, 4] ^ 2 - R[1, 2] ^ 2 - R[1, 4] ^ 2 + R[1, 2] ^ 2 * R[3, 4] ^ 2 + R[1, 4] ^ 2 * R[2, 3] ^ 2 + 2 * R[2, 3] * R[2, 4] * R[3, 4] + 2 * R[1, 2] * R[1, 4] * R[2, 4] - 2 * R[1, 2] * R[2, 3] * R[3, 4] * R[1, 4]
@@ -367,7 +367,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
       R[1, 3] = r13
       R[3, 1] = r13
       
-      ###r24
+      #r24
       
       a24 = (R[1, 3] ^ 2 - 1)
       b24 = 2 * R[2, 3] * R[3, 4] + 2 * R[1, 2] * R[1, 4] - 2 * R[1, 2] * R[1, 3] * R[3, 4] - 2 * R[1, 3] * R[1, 4] * R[2, 3]
@@ -464,7 +464,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
       R[2, 4] = r24
       R[4, 2] = r24
       
-      ###r14
+      #r14
       a14 = (R[2, 3] ^ 2 - 1)
       b14 = 2 * R[1, 2] * R[2, 4] + 2 * R[1, 3] * R[3, 4] - 2 * R[1, 2] * R[2, 3] * R[3, 4] - 2 * R[1, 3] * R[2, 3] * R[2, 4]
       c14 = 1 - R[1, 2] ^ 2 - R[1, 3] ^ 2 - R[2, 3] ^ 2 - R[2, 4] ^ 2 - R[3, 4] ^ 2 + R[1, 2] ^ 2 * R[3, 4] ^ 2 + R[1, 3] ^ 2 * R[2, 4] ^ 2 + 2 * R[2, 3] * R[2, 4] * R[3, 4] + 2 * R[1, 2] * R[1, 3] * R[2, 3] - 2 * R[1, 2] * R[1, 3] * R[2, 4] * R[3, 4]
@@ -567,7 +567,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
       R[1, 4] = r14
       R[4, 1] = r14
       
-      ###r23
+      #r23
       a23 = (R[1, 4] ^ 2 - 1)
       b23 = 2 * R[2, 4] * R[3, 4] + 2 * R[1, 2] * R[1, 3] - 2 * R[1, 2] * R[3, 4] * R[1, 4] - 2 * R[1, 3] * R[1, 4] * R[2, 4]
       c23 = 1 - R[3, 4] ^ 2 - R[2, 4] ^ 2 - R[1, 2] ^ 2 - R[1, 3] ^ 2 - R[1, 4] ^ 2 + R[1, 2] ^ 2 * R[3, 4] ^ 2 + R[1, 3] ^ 2 * R[2, 4] ^ 2 + 2 * R[1, 2] * R[1, 4] * R[2, 4] + 2 * R[1, 3] * R[1, 4] * R[3, 4] - 2 * R[1, 2] * R[1, 3] * R[2, 4] * R[3, 4]
@@ -685,7 +685,7 @@ run_sim = function(SIM, ST, X, n, condindfit){
       R[3, 2] = r23
       
       
-      ###r34
+      #r34
       a34 = (R[1, 2] ^ 2 - 1)
       b34 = 2 * R[2, 3] * R[2, 4] + 2 * R[1, 3] * R[1, 4] - 2 * R[1, 2] * R[1, 4] * R[2, 3] - 2 * R[1, 2] * R[1, 3] * R[2, 4]
       c34 = 1 - R[1, 2] ^ 2 - R[1, 3] ^ 2 - R[1, 4] ^ 2 - R[2, 3] ^ 2 - R[2, 4] ^ 2 + R[1, 3] ^ 2 * R[2, 4] ^ 2 + R[2, 3] ^ 2 * R[1, 4] ^ 2 + 2 * R[1, 2] * R[1, 3] * R[2, 3] + 2 * R[1, 4] * R[1, 2] * R[2, 4] - 2 * R[1, 3] * R[2, 4] * R[1, 4] * R[2, 3]
