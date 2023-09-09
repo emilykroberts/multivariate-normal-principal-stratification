@@ -6,12 +6,17 @@
 #' @param ST dataset
 #' @param X covariate
 #' @param n sample size
+#' @param condindfit fit using conditional independence assumption
 #'
 #' @return simulation results
 #'
 #' @examples 
 #' example(run_sim(SIM = 1000, ST = STdat, X = X, n = 100))
-run_sim = function(SIM, ST, X, n){
+run_sim = function(SIM, ST, X, n, condindfit){
+  
+  if(missing(condindfit)){
+    condindfit = F
+  }
   
   burnin = 0.3 * SIM
   trt = c(rep(0, n / 2), rep(1, n / 2))
@@ -800,6 +805,13 @@ run_sim = function(SIM, ST, X, n){
       if(any(eigen(R)$values < 0)){ next}
       
     }
+    
+    if(condindfit){
+      R[1, 2] = R[2, 1] = R[1, 4] / R[2, 4]
+      R[3, 2] = R[2, 3] = R[1, 2] * R[1, 3]
+    }
+    
+    if(any(eigen(R)$values < 0)) next; if(any(abs(R) > 1)) next
     
     holdmu[, sim] = c(holdalpha0[sim], holdalpha01[sim], holdbeta0[sim], holdbeta01[sim])
     holdmu1[, sim] = c(holdalpha0[sim] + holdpsi1[sim], holdalpha01[sim] + holdpsi2[sim], holdbeta0[sim] + holdomega1[sim], holdbeta01[sim] + holdomega2[sim])
