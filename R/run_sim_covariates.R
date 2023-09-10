@@ -18,6 +18,10 @@
 #' example(run_sim(SIM = 1000, ST = STdat, X = X, n = 100))
 run_sim = function(SIM, ST, X, n, condindfit, trt){
   
+  if(missing(condindfit)){
+    condindfit = F
+  }
+  
   burnin = 0.3 * SIM
   # trt = c(rep(0, n / 2), rep(1, n / 2))
   
@@ -74,34 +78,39 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     R = holdR[, , sim - 1]
     SIG = S %*% R %*% S
     
-    mu = cbind(rep(holdalpha0[sim - 1], n), 
-               rep(holdalpha01[sim - 1], n), 
-               rep(holdbeta0[sim - 1], n), 
-               rep(holdbeta01[sim - 1], n))
+    mu = cbind(rep(holdalpha0[sim - 1], n) + holdpsi1[sim - 1] * X, 
+               rep(holdalpha01[sim - 1], n) + holdpsi2[sim - 1] * X, 
+               rep(holdbeta0[sim - 1], n) + holdomega1[sim - 1] * X, 
+               rep(holdbeta01[sim - 1], n) + holdomega2[sim - 1] * X)
     
     
     for(i in 1:n){
+      
       if(trt[i] == 0){
-        ST[i, c(2, 4)] =
-          c(mu[i, c(2, 4)] + (SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)])) %*% (ST[i, c(1, 3)] - mu[i, c(1, 3)])) + 
+        
+        ST[i, c(2, 4)] = c(mu[i, c(2, 4)] + (SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)])) %*% t(as.matrix(t(ST[i, c(1, 3)] - mu[i, c(1, 3)])))) + 
           mvrnorm(1, c(0, 0), SIG[c(2, 4), c(2, 4)] - SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)]) %*% SIG[c(1, 3), c(2, 4)])
       }
+      
       if(trt[i] == 1){
-        ST[i , c(1 , 3)] =
-          c(mu[i, c(1 , 3)] + (SIG[c(1 , 3) , c(2, 4)]  %*%  ginv( SIG[c(2, 4), c(2, 4)])) %*% (ST[i, c(2, 4)] - mu[i, c(2, 4)])) + 
-          mvrnorm(1,  c(0, 0), SIG[c(1, 3), c(1, 3)] - SIG[c(1, 3), c(2, 4)] %*% ginv(SIG[c(2, 4), c(2, 4)]) %*% SIG[c(2, 4), c(1, 3)])
+        ST[i, c(1, 3)] = c(mu[i, c(1, 3)] + (SIG[c(1, 3), c(2, 4)] %*% ginv(SIG[c(2, 4), c(2, 4)])) %*% t(as.matrix(t(ST[i, c(2, 4)] - mu[i, c(2, 4)])))) + 
+          mvrnorm(1, c(0, 0), SIG[c(1, 3), c(1, 3)] - SIG[c(1, 3), c(2, 4)] %*% ginv(SIG[c(2, 4), c(2, 4)]) %*% SIG[c(2, 4), c(1, 3)])
       }
+      
     }
     
     #estimate coefficients
-    Xmat = XmatS = cbind(rep(1, n), 0)
+    Xmat = XmatS = cbind(rep(1, n), X)
+    
+    v = ginv(SIG0Smat + as.numeric(tauSS0) * (t(XmatS) %*% XmatS))
+    m = v %*% ((diag(SIG0Smat) * theta0S) + tauSS0 * t(XmatS) %*% ST[, 1]) 
     
     Lambda0t = diag(c(rep(0.1, 2))); tauST0 = holdS[1, 1, sim - 1] ^ 2
     v = ginv(Lambda0t  +  as.numeric(tauST0) * (t(Xmat) %*% Xmat))
     m = v %*% (tauST0 * t(Xmat) %*% as.matrix(ST[, 1])) 
     betaS = c(rmvnorm(1, m, v / n))
     holdalpha0[sim] = betaS[1]
-    holdpsi1[sim] = betaS[2] = 0
+    holdpsi1[sim] = betaS[2]
     tmp1 = (ST[, 1]) - XmatS %*% betaS
     
     Lambda0t = diag(c(rep(0.1, 2))); tauST0 = holdS[2, 2, sim - 1] ^ 2
@@ -109,7 +118,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     m = v %*% (tauST0 * t(Xmat) %*% as.matrix(ST[, 2])) 
     betaS = c(rmvnorm(1, m, v / n))
     holdalpha01[sim] = betaS[1]
-    holdpsi2[sim] = betaS[2] = 0
+    holdpsi2[sim] = betaS[2]
     tmp2 = (ST[, 2]) - XmatS %*% betaS
     
     Lambda0t = diag(c(rep(0.1, 2))); tauST0 = holdS[3, 3, sim - 1] ^ 2
@@ -117,7 +126,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     m = v %*% (tauST0 * t(Xmat) %*% as.matrix(ST[, 3])) 
     betaT = c(rmvnorm(1, m, v / n))
     holdbeta0[sim] = betaT[1]
-    holdomega1[sim] = betaT[2] = 0
+    holdomega1[sim] = betaT[2]
     tmp3 = (ST[, 3]) - XmatS %*% betaT
     
     Lambda0t = diag(c(rep(0.1, 2))); tauST0 = holdS[4, 4, sim - 1] ^ 2
@@ -125,16 +134,16 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     m = v %*% (tauST0 * t(Xmat) %*% as.matrix(ST[, 4])) 
     betaT = c(rmvnorm(1, m, v / n))
     holdbeta01[sim] = betaT[1]
-    holdomega2[sim] = betaT[2] = 0
+    holdomega2[sim] = betaT[2]
     tmp4 = (ST[, 4]) - XmatS %*% betaT
     
     #update entire sigma
     tmp = rbind(t(tmp1), t(tmp2), t(tmp3), t(tmp4))
     
-    mu = cbind(rep(holdalpha0[sim], n), 
-               rep(holdalpha01[sim], n), 
-               rep(holdbeta0[sim], n), 
-               rep(holdbeta01[sim], n))
+    mu = cbind(rep(holdalpha0[sim], n) + holdpsi1[sim] * X, 
+               rep(holdalpha01[sim], n) + holdpsi2[sim] * X, 
+               rep(holdbeta0[sim], n) + holdomega1[sim] * X, 
+               rep(holdbeta01[sim], n) + holdomega2[sim] * X)
     
     resid = ST - t(matrix((mu), 4, n, byrow = T))
     cor(resid)
@@ -145,7 +154,12 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     s2 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp2 ^ 2) / 2  +  b))
     s3 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp3 ^ 2) / 2  +  b))
     s4 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp4 ^ 2) / 2  +  b))
-
+    
+    # s1 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp1 ^ 2) / 2  +  b))
+    # s2 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp2 ^ 2) / 2  +  b))
+    # s3 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp3 ^ 2) / 2  +  b))
+    # s4 = rinvgamma(1, shape = a  +  n / 4, scale = (sum(tmp4 ^ 2) / 2  +  b))
+    
     # s1 = sd(tmp1)
     # s2 = sd(tmp2)
     # s3 = sd(tmp3)
@@ -156,7 +170,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     S[3, 3] = s3
     S[4, 4] = s4
     
-    if(any(S > holdS[, , 1] + 3)) break # some settings are not converging
+    #print(S)
     
     if(holdSmatrix) S = holdS[, , 1]
     
@@ -290,7 +304,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
         fr13[(k - low13 + 1), 1] = r
         
         summand = apply(resid, 1, function(resid) resid %*% ginv(S %*% Rho %*% S) %*% resid)
-        
+
         fr13[(k - low13 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
       }
       
