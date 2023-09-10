@@ -62,6 +62,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     holdalpha01[1] = coef(lm(ST[trt == 1, 2] ~ X[trt == 1]))[1]
     holdbeta0[1] = coef(lm(ST[trt == 0, 3] ~ X[trt == 0]))[1]
     holdbeta01[1] = coef(lm(ST[trt == 1, 4] ~ X[trt == 1]))[1]
+    SIG0 = diag(rep(10 ^ 6, 4))
     
     ST = ST[, 1:4]
   }
@@ -79,7 +80,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
                rep(holdbeta0[sim - 1], n), 
                rep(holdbeta01[sim - 1], n))
     
-    
     for(i in 1:n){
       if(trt[i] == 0){
         ST[i, c(2, 4)] =
@@ -87,8 +87,8 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
           mvrnorm(1, c(0, 0), SIG[c(2, 4), c(2, 4)] - SIG[c(2, 4), c(1, 3)] %*% ginv(SIG[c(1, 3), c(1, 3)]) %*% SIG[c(1, 3), c(2, 4)])
       }
       if(trt[i] == 1){
-        ST[i , c(1 , 3)] =
-          c(mu[i, c(1 , 3)] + (SIG[c(1 , 3) , c(2, 4)]  %*%  ginv( SIG[c(2, 4), c(2, 4)])) %*% (ST[i, c(2, 4)] - mu[i, c(2, 4)])) + 
+        ST[i, c(1 , 3)] =
+          c(mu[i, c(1 , 3)] + (SIG[c(1 , 3), c(2, 4)]  %*%  ginv(SIG[c(2, 4), c(2, 4)])) %*% (ST[i, c(2, 4)] - mu[i, c(2, 4)])) + 
           mvrnorm(1,  c(0, 0), SIG[c(1, 3), c(1, 3)] - SIG[c(1, 3), c(2, 4)] %*% ginv(SIG[c(2, 4), c(2, 4)]) %*% SIG[c(2, 4), c(1, 3)])
       }
     }
@@ -96,45 +96,24 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     #estimate coefficients
     Xmat = XmatS = cbind(rep(1, n), 0)
     
-    Lambda0t = diag(c(rep(0.1, 2))); tauST0 = holdS[1, 1, sim - 1] ^ 2
-    v = ginv(Lambda0t  +  as.numeric(tauST0) * (t(Xmat) %*% Xmat))
-    m = v %*% (tauST0 * t(Xmat) %*% as.matrix(ST[, 1])) 
-    betaS = c(rmvnorm(1, m, v / n))
-    holdalpha0[sim] = betaS[1]
-    holdpsi1[sim] = betaS[2] = 0
-    tmp1 = (ST[, 1]) - XmatS %*% betaS
+    mu = mvrnorm(1, Sigma = solve(n*solve(SIG)+solve(SIG0)), 
+                 mu = solve(n * solve(SIG) + solve(SIG0)) %*% (n * solve(SIG) %*% (t(ST) %*% rep(1, n) / n)))
     
-    Lambda0t = diag(c(rep(0.1, 2))); tauST0 = holdS[2, 2, sim - 1] ^ 2
-    v = ginv(Lambda0t  +  as.numeric(tauST0) * (t(Xmat) %*% Xmat))
-    m = v %*% (tauST0 * t(Xmat) %*% as.matrix(ST[, 2])) 
-    betaS = c(rmvnorm(1, m, v / n))
-    holdalpha01[sim] = betaS[1]
-    holdpsi2[sim] = betaS[2] = 0
-    tmp2 = (ST[, 2]) - XmatS %*% betaS
+    holdalpha0[sim] = mu[1]
+    holdalpha01[sim] = mu[2]
+    holdbeta0[sim] = mu[3]
+    holdbeta01[sim] = mu[4]
     
-    Lambda0t = diag(c(rep(0.1, 2))); tauST0 = holdS[3, 3, sim - 1] ^ 2
-    v = ginv(Lambda0t  +  as.numeric(tauST0) * (t(Xmat) %*% Xmat))
-    m = v %*% (tauST0 * t(Xmat) %*% as.matrix(ST[, 3])) 
-    betaT = c(rmvnorm(1, m, v / n))
-    holdbeta0[sim] = betaT[1]
-    holdomega1[sim] = betaT[2] = 0
-    tmp3 = (ST[, 3]) - XmatS %*% betaT
+    tmp1 = (ST[, 1]) - holdalpha0[sim]
     
-    Lambda0t = diag(c(rep(0.1, 2))); tauST0 = holdS[4, 4, sim - 1] ^ 2
-    v = ginv(Lambda0t  +  as.numeric(tauST0) * (t(Xmat) %*% Xmat))
-    m = v %*% (tauST0 * t(Xmat) %*% as.matrix(ST[, 4])) 
-    betaT = c(rmvnorm(1, m, v / n))
-    holdbeta01[sim] = betaT[1]
-    holdomega2[sim] = betaT[2] = 0
-    tmp4 = (ST[, 4]) - XmatS %*% betaT
+    tmp2 = (ST[, 2]) - holdalpha01[sim]
+
+    tmp3 = (ST[, 3]) - holdbeta0[sim]
+
+    tmp4 = (ST[, 4]) - holdbeta01[sim]
     
     #update entire sigma
     tmp = rbind(t(tmp1), t(tmp2), t(tmp3), t(tmp4))
-    
-    mu = cbind(rep(holdalpha0[sim], n), 
-               rep(holdalpha01[sim], n), 
-               rep(holdbeta0[sim], n), 
-               rep(holdbeta01[sim], n))
     
     resid = ST - t(matrix((mu), 4, n, byrow = T))
     cor(resid)
@@ -156,7 +135,10 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     S[3, 3] = s3
     S[4, 4] = s4
     
-    if(any(S > holdS[, , 1] + 3)) break # some settings are not converging
+    if(S[1,1] > (holdS[1,1,sim-1] + 2)) next # some settings are not converging well
+    if(S[2,2] > (holdS[2,2,sim-1] + 2)) next # some settings are not converging well
+    if(S[3,3] > (holdS[3,3,sim-1] + 2)) next # some settings are not converging well
+    if(S[4,4] > (holdS[4,4,sim-1] + 2)) next # some settings are not converging well
     
     if(holdSmatrix) S = holdS[, , 1]
     
@@ -761,9 +743,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       }
       R[3, 4] = r34
       R[4, 3] = r34
-      
-      if(any(eigen(R)$values < 0)){ next}
-      
+    
     }
     
     if(condindfit){
@@ -774,8 +754,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     if(any(eigen(R)$values < 0)) next; if(any(abs(R) > 1)) next
     
     holdmu[, sim] = c(holdalpha0[sim], holdalpha01[sim], holdbeta0[sim], holdbeta01[sim])
-    holdmu1[, sim] = c(holdalpha0[sim] + holdpsi1[sim], holdalpha01[sim] + holdpsi2[sim], holdbeta0[sim] + holdomega1[sim], holdbeta01[sim] + holdomega2[sim])
-    
     holdS[, , sim] = S
     holdR[, , sim] = R
     holdST[, , sim] = t(ST)
