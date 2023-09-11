@@ -103,7 +103,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     #estimate coefficients
     Xmat = XmatS = cbind(rep(1, n), 0)
     
-    mu = mvrnorm(1, Sigma = solve(n*solve(SIG)+solve(SIG0)), 
+    mu = mvrnorm(1, Sigma = solve(n * solve(SIG) + solve(SIG0)), 
                  mu = solve(n * solve(SIG) + solve(SIG0)) %*% (n * solve(SIG) %*% (t(ST) %*% rep(1, n) / n)))
     
     holdalpha0[sim] = mu[1]
@@ -168,7 +168,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
         fs[(k-low + 1), 2] = fsig(n, s, j3)
       }
       fs = fs[!is.infinite(fs[, 2]), ] 
-      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = fs[, 2] - median(fs[, 2])
       
       fs[, 2] = exp(fs[, 2])
       fs = fs[!is.infinite(fs[, 2]), ] 
@@ -178,7 +178,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       
       low = 1000 * fs[x1, 1]
       up = 1000 * fs[x2, 1]
-      
       
       fs = array(0, c((up-low + 2), 4))
       
@@ -200,7 +199,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       fs = fs[c(fs[, 1] != 0), ]
       fs = fs[!is.infinite(fs[, 2]), ] 
       
-      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = fs[, 2] - median(fs[, 2])
       
       fs[, 2] = exp(fs[, 2])
       fs = fs[!is.infinite(fs[, 2]), ] 
@@ -228,7 +227,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       
       s1 = s1[1]
       
-      
       ##s2
       up = 250
       low = 100
@@ -248,14 +246,12 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
             (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
         )
         
-        
-        
         fs[(k-low + 1), 2] = fsig(n, s, j3)
       }
       
       fs = fs[!is.infinite(fs[, 2]), ] 
       
-      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = fs[, 2] - median(fs[, 2])
       fs[, 2] = exp(fs[, 2])
       fs = fs[!is.infinite(fs[, 2]), ] 
       m = which(fs[, 2] == max(fs[, 2]))[1]
@@ -280,15 +276,13 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
             (resid[, 3] / Sig[3, 3]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 3] + (resid[, 2] / Sig[2, 2]) * Rin[2, 3] + (resid[, 3] / Sig[3, 3]) * Rin[3, 3] + (resid[, 4] / Sig[4, 4]) * Rin[4, 3]) + 
             (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
         )
-        
-        
-        
+      
         fs[(k-low + 1), 2] = fsig(n, s, j3)
       }
       fs = fs[c(fs[, 1] != 0), ]
       fs = fs[!is.infinite(fs[, 2]), ] 
       
-      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = fs[, 2] - median(fs[, 2])
       fs[, 2] = exp(fs[, 2])
       fs = fs[!is.infinite(fs[, 2]), ] 
       
@@ -301,7 +295,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       }
       
       u = runif(1, 0, 1)
-      
       
       if (u<fs[1, 4]){
         s2 = fs[1, 1]
@@ -328,7 +321,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
         
         fs[(k-low + 1), 1] = s
         
-        
         j3 = sum(
           (resid[, 1] / Sig[1, 1]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 1] + (resid[, 2] / Sig[2, 2]) * Rin[2, 1] + (resid[, 3] / Sig[3, 3]) * Rin[3, 1] + (resid[, 4] / Sig[4, 4]) * Rin[4, 1]) + 
             (resid[, 2] / Sig[2, 2]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 2] + (resid[, 2] / Sig[2, 2]) * Rin[2, 2] + (resid[, 3] / Sig[3, 3]) * Rin[3, 2] + (resid[, 4] / Sig[4, 4]) * Rin[4, 2]) + 
@@ -336,12 +328,11 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
             (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
         )
         
-        
         fs[(k-low + 1), 2] = fsig(n, s, j3)
       }
       fs = fs[!is.infinite(fs[, 2]), ] 
       
-      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = fs[, 2] - median(fs[, 2])
       fs[, 2] = exp(fs[, 2])
       fs = fs[!is.infinite(fs[, 2]), ] 
       m = which(fs[, 2] == max(fs[, 2]))[1]
@@ -351,7 +342,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       
       low = 1000 * fs[x1, 1]
       up = 1000 * fs[x2, 1]
-      
       
       fs = array(0, c((up-low + 2), 4))
       for (k in low:up){
@@ -363,7 +353,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
         
         fs[(k-low + 1), 1] = s
         
-        
         j3 = sum(
           (resid[, 1] / Sig[1, 1]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 1] + (resid[, 2] / Sig[2, 2]) * Rin[2, 1] + (resid[, 3] / Sig[3, 3]) * Rin[3, 1] + (resid[, 4] / Sig[4, 4]) * Rin[4, 1]) + 
             (resid[, 2] / Sig[2, 2]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 2] + (resid[, 2] / Sig[2, 2]) * Rin[2, 2] + (resid[, 3] / Sig[3, 3]) * Rin[3, 2] + (resid[, 4] / Sig[4, 4]) * Rin[4, 2]) + 
@@ -371,13 +360,12 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
             (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
         )
         
-        
         fs[(k-low + 1), 2] = fsig(n, s, j3)
       }
       fs = fs[c(fs[, 1] != 0), ]
       fs = fs[!is.infinite(fs[, 2]), ] 
       
-      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = fs[, 2] - median(fs[, 2])
       fs[, 2] = exp(fs[, 2])
       fs = fs[!is.infinite(fs[, 2]), ] 
       for (k in 1: length(fs[, 1])){
@@ -402,7 +390,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
         s3 = fs[nr, 1]
       }
       s3 = s3[1]
-      
       
       ##s4
       up = 250
@@ -429,7 +416,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       }
       fs = fs[!is.infinite(fs[, 2]), ] 
       
-      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = fs[, 2] - median(fs[, 2])
       fs[, 2] = exp(fs[, 2])
       fs = fs[!is.infinite(fs[, 2]), ] 
       
@@ -464,7 +451,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       fs = fs[c(fs[, 1] != 0), ]
       fs = fs[!is.infinite(fs[, 2]), ] 
       
-      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = fs[, 2] - median(fs[, 2])
       fs[, 2] = exp(fs[, 2])
       fs = fs[!is.infinite(fs[, 2]), ] 
       for (k in 1: length(fs[, 1])){
@@ -476,7 +463,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       }
       
       u = runif(1, 0, 1)
-      
       
       if (u<fs[1, 4]){
         s4 = fs[1, 1]
@@ -490,12 +476,10 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       }
       s4 = s4[1]
       
-      
       s1 = sd(tmp1)
       s2 = sd(tmp2)
       s3 = sd(tmp3)
       s4 = sd(tmp4)
-      
       
       S = diag(c(s1, s2, s3, s4))
       
@@ -1133,7 +1117,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     
   } 
   
-  
   params_matrix = data.frame(holdpsi1 = holdpsi1, holdpsi2 = holdpsi2, holdomega1 = holdomega1, holdomega2 = holdomega2, 
                              holdalpha0 = holdalpha0, holdalpha01 = holdalpha01, holdbeta0 = holdbeta0, holdbeta01 = holdbeta01, 
                              int = int, slope = slope, 
@@ -1160,3 +1143,4 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
   return(result)
   
 }
+
