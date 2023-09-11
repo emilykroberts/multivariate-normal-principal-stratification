@@ -24,14 +24,16 @@ SIM = 100
 
 mu = c(2, 3.4, 4, 5)
 sig = 1
-psi2 = 0; psi1 = 0; omega1 = 0; omega2 = 0 #main effects of x
+psi2 = 0; psi1 = 0; omega1 = 0; omega2 = 0 # main effects of x
 trt = c(rep(0, n / 2), rep(1, n / 2))
 set.seed(323)
 ST = generatedata(n = n, mu = mu, psi2 = psi2, psi1 = psi1, omega1 = omega1, omega2 = omega2, sig = sig)
 X = ST[, 5]
 condindfit = F
 
-res = run_sim(SIM = SIM, ST = ST, n = n, X = X, trt = trt, condindfit = condindfit)
+# res = run_sim(SIM = SIM, ST = ST, X = X, trt = trt, condindfit = condindfit) # impute CFs
+
+res = run_sim_obsdata(SIM = SIM, ST = ST, X = X, trt = trt, condindfit = condindfit) # use obs data only
 
 params_matrix = res$params_matrix
 

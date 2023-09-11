@@ -8,7 +8,6 @@
 #' @param SIM number of iterations of mcmc to run
 #' @param ST dataset
 #' @param X covariate
-#' @param n sample size
 #' @param condindfit fit using conditional independence assumption
 #' @param trt treatment allocation vector
 #'
@@ -16,7 +15,7 @@
 #'
 #' @examples 
 #' example(run_sim(SIM = 1000, ST = STdat, X = X, n = 100))
-run_sim = function(SIM, ST, X, n, condindfit, trt){
+run_sim = function(SIM, ST, X, condindfit, trt){
   
   fsig = function(n, s, j){ # put in own function if keeping
     return(- (n) * log(s) + (-0.5 * j)
@@ -26,6 +25,8 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
   burnin = 0.3 * SIM
   # trt = c(rep(0, n / 2), rep(1, n / 2))
   
+    n = nrow(ST)
+
   {holdmu = matrix(rep(0, 4 * SIM), 4, SIM)
     holdmu1 = matrix(rep(0, 4 * SIM), 4, SIM)
     
