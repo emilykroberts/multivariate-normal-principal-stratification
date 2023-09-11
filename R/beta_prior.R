@@ -5,6 +5,8 @@
 #' @param n sample size
 #' @param R correlation matrix
 #' @param j inner component of normal likelihood
+#' @param coord1 row coordinate of correlation matrix
+#' @param coord2 column coordinate of correlation matrix
 #'
 #' @return proportional likelihood
 #'
