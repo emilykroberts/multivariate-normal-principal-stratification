@@ -155,14 +155,14 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
     
     summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(1, 3), c(1, 3)] %*% R2[c(1, 3), c(1, 3)] %*% S[c(1, 3), c(1, 3)]) %*% (resid))
     
-    ratio = exp(fdelt(n / 2, R = R2, j = sum(summand)))*(1 / (1 - holdR[1, 3, sim - 1] ^ 2))
+    ratio = exp(beta_prior(n / 2, R = R2, j = sum(summand)))*(1 / (1 - holdR[1, 3, sim - 1] ^ 2))
     
     R2 = holdR[, , sim - 1]; 
     if(any(eigen(R2)$values < 0)) next;
     
     summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(1, 3), c(1, 3)] %*% R2[c(1, 3), c(1, 3)] %*% S[c(1, 3), c(1, 3)]) %*% (resid))
     
-    ratio2 = exp(fdelt(n / 2, R = R2, j = sum(summand)))*(1 / (1 - ifisherz(y) ^ 2))
+    ratio2 = exp(beta_prior(n / 2, R = R2, j = sum(summand)))*(1 / (1 - ifisherz(y) ^ 2))
     
     prob = max(0, min(1, (ratio / ratio2)))
     if(is.na(prob)) next
@@ -186,14 +186,14 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
     
     summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(2, 4), c(2, 4)] %*% R2[c(2, 4), c(2, 4)] %*% S[c(2, 4), c(2, 4)]) %*% (resid))
     
-    ratio = exp(fdelt(n / 2, R = R2, j = sum(summand)))*(1 / (1 - holdR[2, 4, sim - 1] ^ 2))
+    ratio = exp(beta_prior(n / 2, R = R2, j = sum(summand)))*(1 / (1 - holdR[2, 4, sim - 1] ^ 2))
     
     R2 = holdR[, , sim - 1]; R2[1, 3] = R2[3, 1] = r13
     if(any(eigen(R2)$values < 0)) next;
     
     summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(2, 4), c(2, 4)] %*% R2[c(2, 4), c(2, 4)] %*% S[c(2, 4), c(2, 4)]) %*% (resid))
     
-    ratio2 = exp(fdelt(n / 2, R = R2, j = sum(summand)))*(1 / (1 - ifisherz(y) ^ 2))
+    ratio2 = exp(beta_prior(n / 2, R = R2, j = sum(summand)))*(1 / (1 - ifisherz(y) ^ 2))
     
     prob = max(0, min(1, (ratio / ratio2)))
     if(is.na(prob)) next
