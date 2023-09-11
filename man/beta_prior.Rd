@@ -4,7 +4,7 @@
 \alias{beta_prior}
 \title{beta_prior}
 \usage{
-beta_prior(n, R, j)
+beta_prior(n, R, j, coord1, coord2)
 }
 \arguments{
 \item{n}{sample size}
@@ -12,6 +12,10 @@ beta_prior(n, R, j)
 \item{R}{correlation matrix}
 
 \item{j}{inner component of normal likelihood}
+
+\item{coord1}{row coordinate of correlation matrix}
+
+\item{coord2}{column coordinate of correlation matrix}
 }
 \value{
 proportional likelihood

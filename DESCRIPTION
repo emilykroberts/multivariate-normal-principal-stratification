@@ -8,7 +8,7 @@ Maintainer: Emily Roberts <emily-roberts-1@uiowa.edu>
 Description: Run surrogacy validation for normally distributed surrogate and true outcome.
 License: GPL (>= 2)
 Depends: R (>= 3.5.0)
-Imports: corpcor, bayesSurv, MASS, coda, mvtnorm, MCMCpack
+Imports: corpcor, MASS, coda, mvtnorm, MCMCpack, Surrogate, HardyWeinberg, extraDistr, here
 RoxygenNote: 7.2.3
 Encoding: UTF-8
 URL: https://github.com/name/multivariate-normal-principal-stratification
