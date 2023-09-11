@@ -18,6 +18,11 @@
 #' example(run_sim(SIM = 1000, ST = STdat, X = X, n = 100))
 run_sim = function(SIM, ST, X, n, condindfit, trt){
   
+  fsig = function(n, s, j){ # put in own function if keeping
+    return(- (n) * log(s) + (-0.5 * j)
+    )
+  }
+  
   burnin = 0.3 * SIM
   # trt = c(rep(0, n / 2), rep(1, n / 2))
   
@@ -67,8 +72,10 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     ST = ST[, 1:4]
   }
   
-  holdSmatrix = holdRmatrix = FALSE
-  
+  holdSmatrix = FALSE
+    holdRmatrix_id = FALSE
+    holdRmatrix_nonid = TRUE
+    
   while(sim <= SIM){
     
     S = holdS[, , sim - 1]
@@ -120,29 +127,383 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     var(resid)
     
     a = b = 0.1
+    
+    if(F){
     s1 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp1 ^ 2) / 2  +  b))
     s2 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp2 ^ 2) / 2  +  b))
     s3 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp3 ^ 2) / 2  +  b))
     s4 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp4 ^ 2) / 2  +  b))
 
-    # s1 = sd(tmp1)
-    # s2 = sd(tmp2)
-    # s3 = sd(tmp3)
-    # s4 = sd(tmp4)
-    
     S[1, 1] = s1
     S[2, 2] = s2
     S[3, 3] = s3
     S[4, 4] = s4
     
-    if(S[1,1] > (holdS[1,1,sim-1] + 2)) next # some settings are not converging well
-    if(S[2,2] > (holdS[2,2,sim-1] + 2)) next # some settings are not converging well
-    if(S[3,3] > (holdS[3,3,sim-1] + 2)) next # some settings are not converging well
-    if(S[4,4] > (holdS[4,4,sim-1] + 2)) next # some settings are not converging well
+    # if(S[1,1] > (holdS[1,1,sim-1] + 2)) {print(S); next} # some settings are not converging well
+    # if(S[2,2] > (holdS[2,2,sim-1] + 2)) {print(S); next} # some settings are not converging well
+    # if(S[3,3] > (holdS[3,3,sim-1] + 2)) {print(S); next} # some settings are not converging well
+    # if(S[4,4] > (holdS[4,4,sim-1] + 2)) {print(S); next} # some settings are not converging well
+    }
+    
+    if(T){
+      ####calc s's
+      Rin = ginv(R)
+      ##s1
+      up = 250
+      low = 100
+      fs = matrix(rep(0, 201 * 4), 201, 4)
+      for (k in low:up){
+        s = k / 100
+        Sig = S
+        Sig[1, 1] = s
+        fs[(k-low + 1), 1] = s
+        
+        j3 = sum(
+          (resid[, 1] / Sig[1, 1]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 1] + (resid[, 2] / Sig[2, 2]) * Rin[2, 1] + (resid[, 3] / Sig[3, 3]) * Rin[3, 1] + (resid[, 4] / Sig[4, 4]) * Rin[4, 1]) + 
+            (resid[, 2] / Sig[2, 2]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 2] + (resid[, 2] / Sig[2, 2]) * Rin[2, 2] + (resid[, 3] / Sig[3, 3]) * Rin[3, 2] + (resid[, 4] / Sig[4, 4]) * Rin[4, 2]) + 
+            (resid[, 3] / Sig[3, 3]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 3] + (resid[, 2] / Sig[2, 2]) * Rin[2, 3] + (resid[, 3] / Sig[3, 3]) * Rin[3, 3] + (resid[, 4] / Sig[4, 4]) * Rin[4, 3]) + 
+            (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
+        )
+        
+        fs[(k-low + 1), 2] = fsig(n, s, j3)
+      }
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      fs[, 2] = fs[, 2]-median(fs[, 2])
+      
+      fs[, 2] = exp(fs[, 2])
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      m = which(fs[, 2] == max(fs[, 2]))[1]
+      x1 = max(1, (m-25))
+      x2 = min(length(fs[, 1]), (m + 25))
+      
+      low = 1000 * fs[x1, 1]
+      up = 1000 * fs[x2, 1]
+      
+      
+      fs = array(0, c((up-low + 2), 4))
+      
+      for (k in low:up){
+        s = k / 1000
+        Sig = S
+        Sig[1, 1] = s
+        fs[(k-low + 1), 1] = s
+        
+        j3 = sum(
+          (resid[, 1] / Sig[1, 1]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 1] + (resid[, 2] / Sig[2, 2]) * Rin[2, 1] + (resid[, 3] / Sig[3, 3]) * Rin[3, 1] + (resid[, 4] / Sig[4, 4]) * Rin[4, 1]) + 
+            (resid[, 2] / Sig[2, 2]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 2] + (resid[, 2] / Sig[2, 2]) * Rin[2, 2] + (resid[, 3] / Sig[3, 3]) * Rin[3, 2] + (resid[, 4] / Sig[4, 4]) * Rin[4, 2]) + 
+            (resid[, 3] / Sig[3, 3]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 3] + (resid[, 2] / Sig[2, 2]) * Rin[2, 3] + (resid[, 3] / Sig[3, 3]) * Rin[3, 3] + (resid[, 4] / Sig[4, 4]) * Rin[4, 3]) + 
+            (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
+        )
+        
+        fs[(k-low + 1), 2] = (fsig(n, s, j3))
+      }
+      fs = fs[c(fs[, 1] != 0), ]
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      
+      fs[, 2] = fs[, 2]-median(fs[, 2])
+      
+      fs[, 2] = exp(fs[, 2])
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      for (k in 1: length(fs[, 1])){
+        fs[k, 3] = fs[k, 2] / (sum(fs[, 2]))
+      }
+      
+      for (k in 1:length(fs[, 1])){
+        fs[k, 4] = sum(fs[1:k, 3])
+      }
+      
+      u = runif(1, 0, 1)
+      
+      
+      if (u<fs[1, 4]){
+        s1 = fs[1, 1]
+      }
+      if (u>fs[length(fs[, 1]), 4]){
+        s1 = fs[length(fs[, 1]), 1]
+      }
+      if (u >= fs[1, 4] & u <= fs[length(fs[, 1]), 4]){
+        nr = nearest(fs[, 4], u)
+        s1 = fs[nr, 1]
+      }
+      
+      s1 = s1[1]
+      
+      
+      ##s2
+      up = 250
+      low = 100
+      fs = matrix(rep(0, 201 * 4), 201, 4)
+      for (k in low:up){
+        s = k / 100
+        Sig = S
+        Sig[1, 1] = s1
+        Sig[2, 2] = s
+        
+        fs[(k-low + 1), 1] = s
+        
+        j3 = sum(
+          (resid[, 1] / Sig[1, 1]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 1] + (resid[, 2] / Sig[2, 2]) * Rin[2, 1] + (resid[, 3] / Sig[3, 3]) * Rin[3, 1] + (resid[, 4] / Sig[4, 4]) * Rin[4, 1]) + 
+            (resid[, 2] / Sig[2, 2]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 2] + (resid[, 2] / Sig[2, 2]) * Rin[2, 2] + (resid[, 3] / Sig[3, 3]) * Rin[3, 2] + (resid[, 4] / Sig[4, 4]) * Rin[4, 2]) + 
+            (resid[, 3] / Sig[3, 3]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 3] + (resid[, 2] / Sig[2, 2]) * Rin[2, 3] + (resid[, 3] / Sig[3, 3]) * Rin[3, 3] + (resid[, 4] / Sig[4, 4]) * Rin[4, 3]) + 
+            (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
+        )
+        
+        
+        
+        fs[(k-low + 1), 2] = fsig(n, s, j3)
+      }
+      
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      
+      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = exp(fs[, 2])
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      m = which(fs[, 2] == max(fs[, 2]))[1]
+      
+      x1 = max(1, (m-25))
+      x2 = min(length(fs[, 1]), (m + 25))
+      
+      low = 1000 * fs[x1, 1]
+      up = 1000 * fs[x2, 1]
+      fs = array(0, c((up-low + 2), 4))
+      for (k in low:up){
+        s = k / 1000
+        Sig = S
+        Sig[1, 1] = s1
+        Sig[2, 2] = s
+        
+        fs[(k-low + 1), 1] = s
+        
+        j3 = sum(
+          (resid[, 1] / Sig[1, 1]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 1] + (resid[, 2] / Sig[2, 2]) * Rin[2, 1] + (resid[, 3] / Sig[3, 3]) * Rin[3, 1] + (resid[, 4] / Sig[4, 4]) * Rin[4, 1]) + 
+            (resid[, 2] / Sig[2, 2]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 2] + (resid[, 2] / Sig[2, 2]) * Rin[2, 2] + (resid[, 3] / Sig[3, 3]) * Rin[3, 2] + (resid[, 4] / Sig[4, 4]) * Rin[4, 2]) + 
+            (resid[, 3] / Sig[3, 3]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 3] + (resid[, 2] / Sig[2, 2]) * Rin[2, 3] + (resid[, 3] / Sig[3, 3]) * Rin[3, 3] + (resid[, 4] / Sig[4, 4]) * Rin[4, 3]) + 
+            (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
+        )
+        
+        
+        
+        fs[(k-low + 1), 2] = fsig(n, s, j3)
+      }
+      fs = fs[c(fs[, 1] != 0), ]
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      
+      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = exp(fs[, 2])
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      
+      for (k in 1: length(fs[, 1])){
+        fs[k, 3] = fs[k, 2] / (sum(fs[, 2]))
+      }
+      
+      for (k in 1:length(fs[, 1])){
+        fs[k, 4] = sum(fs[1:k, 3])
+      }
+      
+      u = runif(1, 0, 1)
+      
+      
+      if (u<fs[1, 4]){
+        s2 = fs[1, 1]
+      }
+      if (u>fs[length(fs[, 1]), 4]){
+        s2 = fs[length(fs[, 1]), 1]
+      }
+      if (u >= fs[1, 4] & u <= fs[length(fs[, 1]), 4]){
+        nr = nearest(fs[, 4], u)
+        s2 = fs[nr, 1]
+      }
+      s2 = s2[1]
+      
+      ##s3
+      up = 250
+      low = 100
+      fs = matrix(rep(0, 201 * 4), 201, 4)
+      for (k in low:up){
+        s = k / 100
+        Sig = S
+        Sig[1, 1] = s1
+        Sig[2, 2] = s2
+        Sig[3, 3] = s
+        
+        fs[(k-low + 1), 1] = s
+        
+        
+        j3 = sum(
+          (resid[, 1] / Sig[1, 1]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 1] + (resid[, 2] / Sig[2, 2]) * Rin[2, 1] + (resid[, 3] / Sig[3, 3]) * Rin[3, 1] + (resid[, 4] / Sig[4, 4]) * Rin[4, 1]) + 
+            (resid[, 2] / Sig[2, 2]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 2] + (resid[, 2] / Sig[2, 2]) * Rin[2, 2] + (resid[, 3] / Sig[3, 3]) * Rin[3, 2] + (resid[, 4] / Sig[4, 4]) * Rin[4, 2]) + 
+            (resid[, 3] / Sig[3, 3]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 3] + (resid[, 2] / Sig[2, 2]) * Rin[2, 3] + (resid[, 3] / Sig[3, 3]) * Rin[3, 3] + (resid[, 4] / Sig[4, 4]) * Rin[4, 3]) + 
+            (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
+        )
+        
+        
+        fs[(k-low + 1), 2] = fsig(n, s, j3)
+      }
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      
+      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = exp(fs[, 2])
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      m = which(fs[, 2] == max(fs[, 2]))[1]
+      
+      x1 = max(1, (m-25))
+      x2 = min(length(fs[, 1]), (m + 25))
+      
+      low = 1000 * fs[x1, 1]
+      up = 1000 * fs[x2, 1]
+      
+      
+      fs = array(0, c((up-low + 2), 4))
+      for (k in low:up){
+        s = k / 1000
+        Sig = S
+        Sig[1, 1] = s1
+        Sig[2, 2] = s2
+        Sig[3, 3] = s
+        
+        fs[(k-low + 1), 1] = s
+        
+        
+        j3 = sum(
+          (resid[, 1] / Sig[1, 1]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 1] + (resid[, 2] / Sig[2, 2]) * Rin[2, 1] + (resid[, 3] / Sig[3, 3]) * Rin[3, 1] + (resid[, 4] / Sig[4, 4]) * Rin[4, 1]) + 
+            (resid[, 2] / Sig[2, 2]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 2] + (resid[, 2] / Sig[2, 2]) * Rin[2, 2] + (resid[, 3] / Sig[3, 3]) * Rin[3, 2] + (resid[, 4] / Sig[4, 4]) * Rin[4, 2]) + 
+            (resid[, 3] / Sig[3, 3]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 3] + (resid[, 2] / Sig[2, 2]) * Rin[2, 3] + (resid[, 3] / Sig[3, 3]) * Rin[3, 3] + (resid[, 4] / Sig[4, 4]) * Rin[4, 3]) + 
+            (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
+        )
+        
+        
+        fs[(k-low + 1), 2] = fsig(n, s, j3)
+      }
+      fs = fs[c(fs[, 1] != 0), ]
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      
+      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = exp(fs[, 2])
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      for (k in 1: length(fs[, 1])){
+        fs[k, 3] = fs[k, 2] / (sum(fs[, 2]))
+      }
+      
+      for (k in 1:length(fs[, 1])){
+        fs[k, 4] = sum(fs[1:k, 3])
+      }
+      
+      u = runif(1, 0, 1)
+      
+      
+      if (u<fs[1, 4]){
+        s3 = fs[1, 1]
+      }
+      if (u>fs[length(fs[, 1]), 4]){
+        s3 = fs[length(fs[, 1]), 1]
+      }
+      if (u >= fs[1, 4] & u <= fs[length(fs[, 1]), 4]){
+        nr = nearest(fs[, 4], u)
+        s3 = fs[nr, 1]
+      }
+      s3 = s3[1]
+      
+      
+      ##s4
+      up = 250
+      low = 100
+      fs = matrix(rep(0, 201 * 4), 201, 4)
+      for (k in low:up){
+        s = k / 100
+        Sig = S
+        Sig[1, 1] = s1
+        Sig[2, 2] = s2
+        Sig[3, 3] = s3
+        Sig[4, 4] = s
+        
+        fs[(k-low + 1), 1] = s
+        
+        j3 = sum(
+          (resid[, 1] / Sig[1, 1]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 1] + (resid[, 2] / Sig[2, 2]) * Rin[2, 1] + (resid[, 3] / Sig[3, 3]) * Rin[3, 1] + (resid[, 4] / Sig[4, 4]) * Rin[4, 1]) + 
+            (resid[, 2] / Sig[2, 2]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 2] + (resid[, 2] / Sig[2, 2]) * Rin[2, 2] + (resid[, 3] / Sig[3, 3]) * Rin[3, 2] + (resid[, 4] / Sig[4, 4]) * Rin[4, 2]) + 
+            (resid[, 3] / Sig[3, 3]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 3] + (resid[, 2] / Sig[2, 2]) * Rin[2, 3] + (resid[, 3] / Sig[3, 3]) * Rin[3, 3] + (resid[, 4] / Sig[4, 4]) * Rin[4, 3]) + 
+            (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
+        )
+        
+        fs[(k-low + 1), 2] = fsig(n, s, j3)
+      }
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      
+      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = exp(fs[, 2])
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      
+      m = which(fs[, 2] == max(fs[, 2]))[1]
+      
+      x1 = max(1, (m-25))
+      x2 = min(length(fs[, 1]), (m + 25))
+      
+      low = 1000 * fs[x1, 1]
+      up = 1000 * fs[x2, 1]
+      
+      fs = array(0, c((up-low + 2), 4))
+      for (k in low:up){
+        s = k / 1000
+        Sig = S
+        Sig[1, 1] = s1
+        Sig[2, 2] = s2
+        Sig[3, 3] = s3
+        Sig[4, 4] = s
+        
+        fs[(k-low + 1), 1] = s
+        
+        j3 = sum(
+          (resid[, 1] / Sig[1, 1]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 1] + (resid[, 2] / Sig[2, 2]) * Rin[2, 1] + (resid[, 3] / Sig[3, 3]) * Rin[3, 1] + (resid[, 4] / Sig[4, 4]) * Rin[4, 1]) + 
+            (resid[, 2] / Sig[2, 2]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 2] + (resid[, 2] / Sig[2, 2]) * Rin[2, 2] + (resid[, 3] / Sig[3, 3]) * Rin[3, 2] + (resid[, 4] / Sig[4, 4]) * Rin[4, 2]) + 
+            (resid[, 3] / Sig[3, 3]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 3] + (resid[, 2] / Sig[2, 2]) * Rin[2, 3] + (resid[, 3] / Sig[3, 3]) * Rin[3, 3] + (resid[, 4] / Sig[4, 4]) * Rin[4, 3]) + 
+            (resid[, 4] / Sig[4, 4]) * ((resid[, 1] / Sig[1, 1]) * Rin[1, 4] + (resid[, 2] / Sig[2, 2]) * Rin[2, 4] + (resid[, 3] / Sig[3, 3]) * Rin[3, 4] + (resid[, 4] / Sig[4, 4]) * Rin[4, 4])
+        )
+        
+        fs[(k-low + 1), 2] = fsig(n, s, j3)
+      }
+      fs = fs[c(fs[, 1] != 0), ]
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      
+      fs[, 2] = fs[, 2]-median(fs[, 2])
+      fs[, 2] = exp(fs[, 2])
+      fs = fs[!is.infinite(fs[, 2]), ] 
+      for (k in 1: length(fs[, 1])){
+        fs[k, 3] = fs[k, 2] / (sum(fs[, 2]))
+      }
+      
+      for (k in 1:length(fs[, 1])){
+        fs[k, 4] = sum(fs[1:k, 3])
+      }
+      
+      u = runif(1, 0, 1)
+      
+      
+      if (u<fs[1, 4]){
+        s4 = fs[1, 1]
+      }
+      if (u>fs[length(fs[, 1]), 4]){
+        s4 = fs[length(fs[, 1]), 1]
+      }
+      if (u >= fs[1, 4] & u <= fs[length(fs[, 1]), 4]){
+        nr = nearest(fs[, 4], u)
+        s4 = fs[nr, 1]
+      }
+      s4 = s4[1]
+      
+      
+      s1 = sd(tmp1)
+      s2 = sd(tmp2)
+      s3 = sd(tmp3)
+      s4 = sd(tmp4)
+      
+      
+      S = diag(c(s1, s2, s3, s4))
+      
+    }
     
     if(holdSmatrix) S = holdS[, , 1]
     
-    if(!holdRmatrix){
+    if(!holdRmatrix_nonid){
       ##r12
       a12 = (R[3, 4] ^ 2 - 1)
       b12 = 2 * R[1, 4] * R[2, 4] - 2 * R[1, 3] * R[2, 4] * R[3, 4] - 2 * R[1, 4] * R[2, 3] * R[3, 4] + 2 * R[1, 3] * R[2, 3]
@@ -243,7 +604,9 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       
       R[1, 2] = r12
       R[2, 1] = r12
-      
+    }
+    
+    if(!holdRmatrix_id){
       
       #r13
       a13 = (R[2, 4] ^ 2 - 1)
@@ -305,8 +668,6 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
         
         fr13[(k - low13 + 1), 2] = uniform_prior(n = n, R = Rho, j = sum(summand))
       }
-      
-      #plot(fr13[, 1], fr13[, 2])
       
       fr13 = fr13[!is.na(fr13[, 2]), ]
       fr13 = fr13[!is.infinite(fr13[, 2]), ] 
@@ -435,7 +796,9 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
       
       R[2, 4] = r24
       R[4, 2] = r24
-      
+    }
+    
+    if(!holdRmatrix_nonid){
       #r14
       a14 = (R[2, 3] ^ 2 - 1)
       b14 = 2 * R[1, 2] * R[2, 4] + 2 * R[1, 3] * R[3, 4] - 2 * R[1, 2] * R[2, 3] * R[3, 4] - 2 * R[1, 3] * R[2, 3] * R[2, 4]
