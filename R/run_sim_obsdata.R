@@ -155,14 +155,14 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
     
     summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(1, 3), c(1, 3)] %*% R2[c(1, 3), c(1, 3)] %*% S[c(1, 3), c(1, 3)]) %*% (resid))
     
-    ratio = exp(beta_prior(n / 2, R = R2, j = sum(summand)))*(1 / (1 - holdR[1, 3, sim - 1] ^ 2))
+    ratio = exp(uniform_prior(n / 2, R = R2, j = sum(summand))) * (1 / (1 - holdR[1, 3, sim - 1] ^ 2))
     
     R2 = holdR[, , sim - 1]; 
     if(any(eigen(R2)$values < 0)) next;
     
     summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(1, 3), c(1, 3)] %*% R2[c(1, 3), c(1, 3)] %*% S[c(1, 3), c(1, 3)]) %*% (resid))
     
-    ratio2 = exp(beta_prior(n / 2, R = R2, j = sum(summand)))*(1 / (1 - ifisherz(y) ^ 2))
+    ratio2 = exp(uniform_prior(n / 2, R = R2, j = sum(summand))) * (1 / (1 - ifisherz(y) ^ 2))
     
     prob = max(0, min(1, (ratio / ratio2)))
     if(is.na(prob)) next
@@ -186,14 +186,14 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
     
     summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(2, 4), c(2, 4)] %*% R2[c(2, 4), c(2, 4)] %*% S[c(2, 4), c(2, 4)]) %*% (resid))
     
-    ratio = exp(beta_prior(n / 2, R = R2, j = sum(summand)))*(1 / (1 - holdR[2, 4, sim - 1] ^ 2))
+    ratio = exp(uniform_prior(n / 2, R = R2, j = sum(summand))) * (1 / (1 - holdR[2, 4, sim - 1] ^ 2))
     
     R2 = holdR[, , sim - 1]; R2[1, 3] = R2[3, 1] = r13
     if(any(eigen(R2)$values < 0)) next;
     
     summand = apply(resid, 1, function(resid) t(resid) %*% ginv(S[c(2, 4), c(2, 4)] %*% R2[c(2, 4), c(2, 4)] %*% S[c(2, 4), c(2, 4)]) %*% (resid))
     
-    ratio2 = exp(beta_prior(n / 2, R = R2, j = sum(summand)))*(1 / (1 - ifisherz(y) ^ 2))
+    ratio2 = exp(uniform_prior(n / 2, R = R2, j = sum(summand))) * (1 / (1 - ifisherz(y) ^ 2))
     
     prob = max(0, min(1, (ratio / ratio2)))
     if(is.na(prob)) next
@@ -225,17 +225,15 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
       R[3, 2] = R[2, 3] = R[1, 2] * R[1, 3]
     }
     
-    if(any(eigen(R)$values < 0)) next; if(any(abs(R)>1)) next
-    
+    if(any(eigen(R)$values < 0)) next; if(any(abs(R) > 1)) next
     
     holdR[, , sim] = R
-    
     
     slope[sim] = (holdR[2, 4, sim] * holdS[2, 2, sim] * holdS[4, 4, sim] - holdR[1, 4, sim] * holdS[1, 1, sim] * holdS[4, 4, sim] - holdR[2, 3, sim] * holdS[2, 2, sim] * holdS[3, 3, sim] + 
                     holdR[1, 3, sim] * holdS[1, 1, sim] * holdS[3, 3, sim]) / (holdS[1, 1, sim] ^ 2 + holdS[2, 2, sim] ^ 2 - 2*holdR[1, 2, sim] * holdS[1, 1, sim] * holdS[2, 2, sim])
     
     int[sim] =(holdmu[4, sim] - holdmu[3, sim]) - ((holdR[2, 4, sim] * holdS[2, 2, sim] * holdS[4, 4, sim] - holdR[1, 4, sim] * holdS[1, 1, sim] * holdS[4, 4, sim] - holdR[2, 3, sim] * holdS[2, 2, sim] * holdS[3, 3, sim] + 
-                                                      holdR[1, 3, sim] * holdS[1, 1, sim] * holdS[3, 3, sim]) / (holdS[1, 1, sim] ^ 2 + holdS[2, 2, sim] ^ 2 - 2*holdR[1, 2, sim] * holdS[1, 1, sim] * holdS[2, 2, sim]))*(holdmu[2, sim] - holdmu[1, sim])
+                                                      holdR[1, 3, sim] * holdS[1, 1, sim] * holdS[3, 3, sim]) / (holdS[1, 1, sim] ^ 2 + holdS[2, 2, sim] ^ 2 - 2*holdR[1, 2, sim] * holdS[1, 1, sim] * holdS[2, 2, sim])) * (holdmu[2, sim] - holdmu[1, sim])
     
     if(sim %% 20 == 0) print(sim)
     

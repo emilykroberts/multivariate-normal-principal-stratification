@@ -134,10 +134,10 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     s3 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp3 ^ 2) / 2  +  b))
     s4 = MCMCpack::rinvgamma(1, shape = a  +  n / 2, scale = (sum(tmp4 ^ 2) / 2  +  b))
 
-    S[1, 1] = s1
-    S[2, 2] = s2
-    S[3, 3] = s3
-    S[4, 4] = s4
+    S[1, 1] = sqrt(s1)
+    S[2, 2] = sqrt(s2)
+    S[3, 3] = sqrt(s3)
+    S[4, 4] = sqrt(s4)
     
     # if(S[1,1] > (holdS[1,1,sim-1] + 2)) {print(S); next} # some settings are not converging well
     # if(S[2,2] > (holdS[2,2,sim-1] + 2)) {print(S); next} # some settings are not converging well
@@ -145,7 +145,7 @@ run_sim = function(SIM, ST, X, n, condindfit, trt){
     # if(S[4,4] > (holdS[4,4,sim-1] + 2)) {print(S); next} # some settings are not converging well
     }
     
-    if(T){
+    if(F){
       ####calc s's
       Rin = ginv(R)
       ##s1
