@@ -38,11 +38,12 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
   n1 = sum(trt == 1, na.rm = T)
   n0 = sum(trt == 0, na.rm = T)
   
-  {holdmu= matrix(rep(0, 4 * SIM), 4, SIM)
+  {holdmu= matrix(rep(NA, 4 * SIM), 4, SIM)
     holdmu1 = matrix(rep(0, 4 * SIM), 4, SIM)
-    holdS = array(rep(0, 4 * 4 * SIM), dim = c(4, 4, SIM))
-    holdR = array(rep(0, 4 * 4 * SIM), dim = c(4, 4, SIM))
+    holdS = array(rep(NA, 4 * 4 * SIM), dim = c(4, 4, SIM))
+    holdR = array(rep(NA, 4 * 4 * SIM), dim = c(4, 4, SIM))
     holdR[, , 1] = R = (diag(c(1, 1, 1, 1))); holdS[, , 1] = S = (diag(c(1, 1, 1, 1)))
+    
     # identified parameters
     holdR[1, 3, 1] = holdR[3, 1, 1] = cor(ST[trt == 0, 1], ST[trt == 0, 3])
     holdR[2, 4, 1] = holdR[4, 2, 1] = cor(ST[trt == 1, 2], ST[trt == 1, 4])
@@ -52,23 +53,19 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
     holdS[3, 3, 1] = sd(ST[trt == 0, 3])
     holdS[4, 4, 1] = sd(ST[trt == 1, 4])
     
-    holdpsi1 = (rep(0, 1 * SIM)); holdpsi2= (rep(0, 1 * SIM))
-    holdomega1 = (rep(0, 1 * SIM)); holdomega2= (rep(0, 1 * SIM))
+    holdpsi1 = (rep(0, 1 * SIM)); holdpsi2 = (rep(0, 1 * SIM))
+    holdomega1 = (rep(0, 1 * SIM)); holdomega2 = (rep(0, 1 * SIM))
     holdalpha0 = (rep(0, 1 * SIM)); holdalpha01 = (rep(0, 1 * SIM))
     holdbeta0 = (rep(0, 1 * SIM)); holdbeta01 = (rep(0, 1 * SIM))
     
-    slope= array(0, c((SIM), 1))
-    int= array(0, c((SIM), 1))
+    slope = array(0, c((SIM), 1))
+    int = array(0, c((SIM), 1))
     
     SIG0Smat = matrix(c(0.1, 0.1), nrow = 2, ncol = 2)
     theta0S = matrix(c(1, 0), nrow = 2)
     tauSS0 = tauSS1 = tauST0 = tauST1 = c(1)
-    
-    #prelim values
-    R[1, 2] = 0.3; R[1, 3] = 0.7; R[1, 4] = 0.15; R[2, 3] = 0.15
-    R[2, 4] = 0.7; R[3, 4] = 0.3
-    for(i in 2:4){ for(j in 1:(i - 1)){ R[i, j] = R[j, i]}}
-    Xmat= cbind(rep(1, n), X)
+
+    Xmat = cbind(rep(1, n), X)
     sim = 2
     
     holdalpha0[1] = coef(lm(ST[trt == 0, 1] ~ X[trt == 0]))[1]
@@ -80,6 +77,7 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
   }
   
   holdSmatrix = F
+  a = b = 0.1
   
   while(sim<=SIM){
     
@@ -118,13 +116,13 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
     holdomega2[sim] = betaT[2]
     tmp4 = (ST[trt == 1, 4]) - Xmat[trt == 1, ] %*% betaT
     
-    #update entire sigma
     mu = cbind(rep(holdalpha0[sim], n) + holdpsi1[sim] * X, 
               rep(holdalpha01[sim], n) + holdpsi2[sim] * X, 
               rep(holdbeta0[sim], n) + holdomega1[sim] * X, 
               rep(holdbeta01[sim], n) + holdomega2[sim] * X)
     
-    a = b = 0.1
+    #update entire sigma
+    
     s1 = MCMCpack::rinvgamma(1, shape = a + n0 / 2, scale = (sum(tmp1 ^ 2) / 2 + b))
     s2 = MCMCpack::rinvgamma(1, shape = a + n1 / 2, scale = (sum(tmp2 ^ 2) / 2 + b))
     s3 = MCMCpack::rinvgamma(1, shape = a + n0 / 2, scale = (sum(tmp3 ^ 2) / 2 + b))
@@ -180,7 +178,7 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
     
     y = rnorm(1, 0.5 * log((1 + holdR[2, 4, sim - 1]) / (1 - holdR[2, 4, sim - 1])), sd = sqrt(1 / (n - 3)))
     
-    R2 = holdR[, , sim - 1]; R2[2, 4] = R2[4, 2] = ifisherz(y)
+    R2 = holdR[, , sim - 1]; R2[1, 3] = R2[3, 1] = r13; R2[2, 4] = R2[4, 2] = ifisherz(y)
     
     if(any(eigen(R2)$values < 0)) next;
     
@@ -232,7 +230,7 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
     slope[sim] = (holdR[2, 4, sim] * holdS[2, 2, sim] * holdS[4, 4, sim] - holdR[1, 4, sim] * holdS[1, 1, sim] * holdS[4, 4, sim] - holdR[2, 3, sim] * holdS[2, 2, sim] * holdS[3, 3, sim] + 
                     holdR[1, 3, sim] * holdS[1, 1, sim] * holdS[3, 3, sim]) / (holdS[1, 1, sim] ^ 2 + holdS[2, 2, sim] ^ 2 - 2*holdR[1, 2, sim] * holdS[1, 1, sim] * holdS[2, 2, sim])
     
-    int[sim] =(holdmu[4, sim] - holdmu[3, sim]) - ((holdR[2, 4, sim] * holdS[2, 2, sim] * holdS[4, 4, sim] - holdR[1, 4, sim] * holdS[1, 1, sim] * holdS[4, 4, sim] - holdR[2, 3, sim] * holdS[2, 2, sim] * holdS[3, 3, sim] + 
+    int[sim] = (holdmu[4, sim] - holdmu[3, sim]) - ((holdR[2, 4, sim] * holdS[2, 2, sim] * holdS[4, 4, sim] - holdR[1, 4, sim] * holdS[1, 1, sim] * holdS[4, 4, sim] - holdR[2, 3, sim] * holdS[2, 2, sim] * holdS[3, 3, sim] + 
                                                       holdR[1, 3, sim] * holdS[1, 1, sim] * holdS[3, 3, sim]) / (holdS[1, 1, sim] ^ 2 + holdS[2, 2, sim] ^ 2 - 2*holdR[1, 2, sim] * holdS[1, 1, sim] * holdS[2, 2, sim])) * (holdmu[2, sim] - holdmu[1, sim])
     
     if(sim %% 20 == 0) print(sim)
@@ -264,8 +262,6 @@ run_sim_obsdata = function(SIM, ST, X, trt, condindfit, grid, min, max){
   result = list(params = params, params_matrix = params_matrix, 
                 args = list(SIM = SIM, burnin = burnin, n = n))
   
-  
   return(result)
-  
   
 }
